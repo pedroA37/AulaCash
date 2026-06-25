@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AulaCash — plataforma educativa de pagos digitales" />
+  <meta property="og:title" content="AulaCash — La billetera digital para el aula" />
+  <meta property="og:description" content="Enseñá economía, pagos y finanzas personales con una simulación real. Sin dinero real." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aulacash-frontend.onrender.com" />
+  <title>AulaCash — Billetera digital educativa</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#009ee3',
+            'primary-dark': '#006492',
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    html { scroll-behavior: smooth; }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .icon-fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+    .shadow-l1 { box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06); }
+    .shadow-l2 { box-shadow: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06); }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .animate-float { animation: float 3.5s ease-in-out infinite; }
+
+    /* Navbar scroll */
+    #navbar { transition: all 0.3s ease; }
+    #navbar.scrolled {
+      background: rgba(255,255,255,0.95) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    /* Stepper active state */
+    .step-circle { transition: all 0.4s ease; }
+    .step-item.active .step-circle {
+      background: #009ee3 !important;
+      color: white !important;
+      border-color: #009ee3 !important;
+    }
+    .step-item.active .step-title { color: #009ee3; }
+
+    /* Feature card hover */
+    .feature-card { transition: all 0.2s ease; }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+    }
+
+    /* Phone cards stack */
+    .card-stack-1 { transform: rotate(-3deg) translateY(8px); z-index: 1; }
+    .card-stack-2 { transform: rotate(0deg); z-index: 3; }
+    .card-stack-3 { transform: rotate(3deg) translateY(8px); z-index: 2; }
+  </style>
+</head>
+<body class="bg-[#f9f9f9] text-[#1a1c1c] overflow-x-hidden">
+
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-transparent">
+    <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5" aria-label="AulaCash inicio">
+        <div class="w-9 h-9 rounded-xl bg-[#009ee3] flex items-center justify-center shadow-md flex-shrink-0">
+          <span class="material-symbols-outlined text-white icon-fill" style="font-size:20px">account_balance_wallet</span>
+        </div>
+        <span class="font-bold text-[18px] text-[#1a1c1c]">AulaCash</span>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-7">
+        <a href="#caracteristicas" class="text-[14px] font-medium text-[#5f5e5e] hover:text-[#009ee3] transition-colors">Características</a>
+        <a href="#como-funciona" class="text-[14px] font-medium text-[#5f5e5e] hover:text-[#009ee3] transition-colors">¿Cómo funciona?</a>
+        <a href="#instalacion" class="text-[14px] font-medium text-[#5f5e5e] hover:text-[#009ee3] transition-colors">Instalación</a>
+        <a href="#docentes" class="text-[14px] font-medium text-[#5f5e5e] hover:text-[#009ee3] transition-colors">Para docentes</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="https://aulacash-frontend.onrender.com"
+           class="hidden sm:inline-flex items-center gap-1.5 h-10 px-5 bg-[#009ee3] text-white font-bold text-[14px] rounded-full hover:brightness-110 active:scale-[0.98] transition-all shadow-md">
+          Ir a la app
+          <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>
+        </a>
+        <!-- Hamburger -->
+        <button id="menu-btn" aria-label="Abrir menú" class="md:hidden p-2 rounded-xl text-[#5f5e5e] hover:bg-black/5 transition-colors">
+          <span class="material-symbols-outlined" style="font-size:26px">menu</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile drawer overlay -->
+  <div id="drawer-overlay" class="fixed inset-0 z-40 bg-black/40 hidden" aria-hidden="true"></div>
+  <!-- Mobile drawer -->
+  <div id="mobile-drawer" class="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col pt-20 pb-8 px-6 gap-2 translate-x-full transition-transform duration-300">
+    <a href="#caracteristicas" class="text-[16px] font-semibold text-[#1a1c1c] py-3 border-b border-[#eeeeee]">Características</a>
+    <a href="#como-funciona" class="text-[16px] font-semibold text-[#1a1c1c] py-3 border-b border-[#eeeeee]">¿Cómo funciona?</a>
+    <a href="#instalacion" class="text-[16px] font-semibold text-[#1a1c1c] py-3 border-b border-[#eeeeee]">Instalación</a>
+    <a href="#docentes" class="text-[16px] font-semibold text-[#1a1c1c] py-3 border-b border-[#eeeeee]">Para docentes</a>
+    <a href="https://aulacash-frontend.onrender.com"
+       class="mt-5 h-13 flex items-center justify-center gap-1.5 bg-[#009ee3] text-white font-bold text-[15px] rounded-full py-3.5">
+      Ir a la app
+      <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+    </a>
+  </div>
+
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="min-h-screen pt-16 flex items-center" style="background: linear-gradient(150deg, #f9f9f9 0%, #e8f4fb 100%)">
+    <div class="max-w-6xl mx-auto px-5 py-20 w-full grid lg:grid-cols-2 gap-14 items-center">
+
+      <!-- Text side -->
+      <div class="space-y-7">
+        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#009ee3]/10 text-[#006492] text-[13px] font-semibold">
+          ✦ 100% educativo · Sin dinero real
+        </span>
+
+        <h1 class="text-[38px] sm:text-[52px] lg:text-[62px] font-bold text-[#1a1c1c] leading-[1.08] tracking-tight">
+          La billetera digital<br><span class="text-[#009ee3]">para el aula</span>
+        </h1>
+
+        <p class="text-[17px] sm:text-[18px] text-[#5f5e5e] leading-relaxed max-w-lg">
+          Enseñá economía, pagos y finanzas personales con una simulación real. Tus alumnos usan transferencias, QR y mercados propios — sin dinero real.
+        </p>
+
+        <div class="flex flex-wrap gap-3 pt-1">
+          <a href="https://aulacash-frontend.onrender.com"
+             class="inline-flex items-center gap-2 h-14 px-8 bg-[#009ee3] text-white font-bold text-[16px] rounded-full shadow-lg hover:brightness-110 active:scale-[0.98] transition-all">
+            Empezar gratis
+            <span class="material-symbols-outlined" style="font-size:20px">arrow_forward</span>
+          </a>
+          <a href="#como-funciona"
+             class="inline-flex items-center gap-2 h-14 px-8 bg-white text-[#1a1c1c] font-bold text-[16px] rounded-full border-2 border-[#eeeeee] hover:border-[#009ee3] active:scale-[0.98] transition-all shadow-l1">
+            Ver demo
+          </a>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="flex justify-center lg:justify-end">
+        <div class="animate-float" style="perspective: 1000px;">
+          <div class="relative" style="width:260px;">
+            <!-- Phone shell -->
+            <div class="relative rounded-[44px] p-[10px]" style="background:#1c1c1e; box-shadow: 0 32px 80px rgba(0,0,0,.35), 0 0 0 2px #3a3a3c, inset 0 0 0 1px rgba(255,255,255,.06);">
+              <!-- Notch -->
+              <div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 rounded-b-3xl z-10 flex items-center justify-center" style="background:#1c1c1e;">
+                <div class="w-14 h-1.5 rounded-full" style="background:#3a3a3c;"></div>
+              </div>
+              <!-- Screen -->
+              <div class="rounded-[36px] overflow-hidden" style="background:#f9f9f9;">
+                <!-- Header -->
+                <div class="px-4 pt-7 pb-4" style="background:linear-gradient(135deg,#006492,#009ee3);">
+                  <div class="flex justify-between text-white/60 text-[10px] mb-2">
+                    <span class="font-medium">9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <p class="text-white/75 text-[11px] font-medium">Hola, María 👋</p>
+                  <div class="flex items-center gap-1.5 mt-0.5 mb-4">
+                    <span class="text-white font-bold text-[15px]">Mercado Escolar</span>
+                    <span class="text-white/50 text-[11px]">· ARS</span>
+                  </div>
+                  <p class="text-white/60 text-[10px] font-semibold uppercase tracking-wider">Tu saldo</p>
+                  <p class="text-white font-bold text-[30px] tracking-tight leading-none mt-1">$ 4.250,00</p>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="mx-3 -mt-3 bg-white rounded-2xl px-3 py-3 shadow-l2 z-10 relative">
+                  <div class="grid grid-cols-4 gap-1 text-center">
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="w-10 h-10 rounded-full bg-[#009ee3] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white" style="font-size:18px">send</span>
+                      </div>
+                      <span class="text-[9px] text-[#5f5e5e] font-medium leading-tight">Transferir</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="w-10 h-10 rounded-full bg-[#009ee3] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white" style="font-size:18px">qr_code_2</span>
+                      </div>
+                      <span class="text-[9px] text-[#5f5e5e] font-medium leading-tight">QR</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="w-10 h-10 rounded-full bg-[#009ee3] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white" style="font-size:18px">receipt_long</span>
+                      </div>
+                      <span class="text-[9px] text-[#5f5e5e] font-medium leading-tight">Historial</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="w-10 h-10 rounded-full bg-[#009ee3] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white" style="font-size:18px">storefront</span>
+                      </div>
+                      <span class="text-[9px] text-[#5f5e5e] font-medium leading-tight">Tienda</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Transactions -->
+                <div class="px-3 pt-3 pb-5 space-y-1.5">
+                  <p class="text-[9px] font-semibold text-[#6e7881] uppercase tracking-wider px-1 mb-2">Últimos movimientos</p>
+
+                  <div class="flex items-center gap-2 bg-white rounded-xl px-2.5 py-2 shadow-l1">
+                    <div class="w-8 h-8 rounded-full bg-[#00ac46]/10 flex items-center justify-center flex-shrink-0">
+                      <span class="material-symbols-outlined text-[#006e2a]" style="font-size:15px">south_west</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[10px] font-semibold text-[#1a1c1c] truncate">De Juan P.</p>
+                      <p class="text-[9px] text-[#5f5e5e]">Transferencia</p>
+                    </div>
+                    <span class="text-[11px] font-bold text-[#006e2a]">+150,00</span>
+                  </div>
+
+                  <div class="flex items-center gap-2 bg-white rounded-xl px-2.5 py-2 shadow-l1">
+                    <div class="w-8 h-8 rounded-full bg-[#009ee3]/10 flex items-center justify-center flex-shrink-0">
+                      <span class="material-symbols-outlined text-[#006492]" style="font-size:15px">shopping_cart</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[10px] font-semibold text-[#1a1c1c] truncate">Compra: Cuaderno</p>
+                      <p class="text-[9px] text-[#5f5e5e]">Tienda</p>
+                    </div>
+                    <span class="text-[11px] font-bold text-[#1a1c1c]">-80,00</span>
+                  </div>
+
+                  <div class="flex items-center gap-2 bg-white rounded-xl px-2.5 py-2 shadow-l1">
+                    <div class="w-8 h-8 rounded-full bg-[#009ee3]/10 flex items-center justify-center flex-shrink-0">
+                      <span class="material-symbols-outlined text-[#006492]" style="font-size:15px">north_east</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[10px] font-semibold text-[#1a1c1c] truncate">Para Ana M.</p>
+                      <p class="text-[9px] text-[#5f5e5e]">Transferencia</p>
+                    </div>
+                    <span class="text-[11px] font-bold text-[#1a1c1c]">-50,00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ SOCIAL PROOF ══════════ -->
+  <section class="bg-white border-y border-[#eeeeee] py-10">
+    <div class="max-w-4xl mx-auto px-5 text-center">
+      <p class="text-[11px] font-semibold uppercase tracking-widest text-[#6e7881] mb-6">Usado en escuelas de todo el país</p>
+      <div class="flex flex-wrap justify-center gap-8">
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-2xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:24px">school</span>
+          </div>
+          <span class="text-[12px] font-medium text-[#5f5e5e]">Colegios secundarios</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-2xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:24px">groups</span>
+          </div>
+          <span class="text-[12px] font-medium text-[#5f5e5e]">Equipos docentes</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-2xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:24px">emoji_events</span>
+          </div>
+          <span class="text-[12px] font-medium text-[#5f5e5e]">Ferias escolares</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-2xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:24px">workspace_premium</span>
+          </div>
+          <span class="text-[12px] font-medium text-[#5f5e5e]">Proyectos educativos</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-12 h-12 rounded-2xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:24px">star</span>
+          </div>
+          <span class="text-[12px] font-medium text-[#5f5e5e]">Clases de economía</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ QUÉ ES AULACASH ══════════ -->
+  <section class="py-24 max-w-6xl mx-auto px-5">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Text -->
+      <div class="space-y-5">
+        <p class="text-[12px] font-semibold uppercase tracking-widest text-[#6e7881]">¿Qué es AulaCash?</p>
+        <h2 class="text-[32px] sm:text-[40px] font-bold text-[#1a1c1c] leading-[1.15] tracking-tight">
+          Una economía real,<br>dentro del aula
+        </h2>
+        <div class="space-y-4 text-[16px] text-[#5f5e5e] leading-relaxed">
+          <p>
+            AulaCash es una simulación educativa que replica el funcionamiento de una billetera digital real. El docente actúa como administrador: crea mercados, define la moneda y carga el saldo inicial de cada alumno.
+          </p>
+          <p>
+            Los alumnos viven la experiencia completa — transfieren entre sí, escanean QR, compran en el catálogo del mercado y consultan su historial. Todo en tiempo real, sin un peso real de por medio.
+          </p>
+          <p>
+            Cada clase puede tener su propio mercado con moneda personalizada (Aulis, Pesos Clase 3A, lo que el docente decida), creando una economía aislada y controlada por el docente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card stack visual -->
+      <div class="relative flex items-center justify-center" style="height: 320px;">
+        <!-- Card 1 -->
+        <div class="card-stack-1 absolute w-72 bg-white rounded-2xl p-4 shadow-l2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[#009ee3]/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[#006492]" style="font-size:22px">storefront</span>
+            </div>
+            <div>
+              <p class="font-bold text-[#1a1c1c] text-[14px]">Mercado del Aula 3A</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#00ac46]/10 text-[#006e2a]">Abierto</span>
+                <span class="text-[12px] text-[#5f5e5e]">Moneda: Aulis (AUL)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card-stack-2 absolute w-72 bg-white rounded-2xl p-4 shadow-l2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-[#00ac46]/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[#006e2a]" style="font-size:22px">south_west</span>
+            </div>
+            <div>
+              <p class="font-bold text-[#1a1c1c] text-[14px]">Juan → María</p>
+              <p class="text-[12px] text-[#5f5e5e]">Transferencia · hace 2 min</p>
+            </div>
+            <span class="ml-auto font-bold text-[#006e2a] text-[16px]">+150 AUL</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card-stack-3 absolute w-72 bg-white rounded-2xl p-4 shadow-l2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[#009ee3]/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[#006492]" style="font-size:22px">qr_code</span>
+            </div>
+            <div>
+              <p class="font-bold text-[#1a1c1c] text-[14px]">QR de cobro</p>
+              <p class="text-[12px] text-[#5f5e5e]">Monto solicitado</p>
+            </div>
+            <span class="ml-auto font-bold text-[#006492] text-[16px]">75 AUL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ FEATURES ══════════ -->
+  <section id="caracteristicas" class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="text-center mb-14">
+        <p class="text-[12px] font-semibold uppercase tracking-widest text-[#6e7881] mb-3">Funcionalidades</p>
+        <h2 class="text-[32px] sm:text-[40px] font-bold text-[#1a1c1c] tracking-tight">Todo lo que necesitás para<br>enseñar finanzas</h2>
+        <p class="text-[14px] text-[#6e7881] mt-3">Simulación educativa · no representa dinero real</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">qr_code_scanner</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">Pagos por QR</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Los alumnos generan y escanean QR para cobrar y pagar dentro del mercado.</p>
+          </div>
+        </div>
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">swap_horiz</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">Transferencias instantáneas</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Enviá moneda de un alumno a otro con saldo actualizado en tiempo real.</p>
+          </div>
+        </div>
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">storefront</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">Mercados propios</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Cada clase tiene su propio mercado con moneda y catálogo de productos únicos.</p>
+          </div>
+        </div>
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">admin_panel_settings</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">Panel de administración</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">El docente carga saldo, crea mercados, gestiona usuarios y ve todas las transacciones.</p>
+          </div>
+        </div>
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">receipt_long</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">Comprobantes PDF</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Cada operación genera un comprobante descargable con número de operación.</p>
+          </div>
+        </div>
+
+        <div class="feature-card bg-[#f9f9f9] rounded-2xl p-6 space-y-4">
+          <div class="w-12 h-12 rounded-xl bg-[#e8f4fb] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#006492]" style="font-size:26px">install_mobile</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-[#1a1c1c] text-[16px] mb-1">PWA instalable</h3>
+            <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Funciona como app nativa en Android e iOS, sin necesidad de Play Store ni App Store.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ CÓMO FUNCIONA ══════════ -->
+  <section id="como-funciona" class="py-24 max-w-6xl mx-auto px-5">
+    <div class="text-center mb-16">
+      <p class="text-[12px] font-semibold uppercase tracking-widest text-[#6e7881] mb-3">Proceso</p>
+      <h2 class="text-[32px] sm:text-[40px] font-bold text-[#1a1c1c] tracking-tight">Tres pasos para empezar</h2>
+    </div>
+
+    <!-- Desktop stepper -->
+    <div class="hidden md:flex items-start gap-0 relative">
+      <!-- Líneas conectoras -->
+      <div class="absolute top-7 left-[calc(33%-20px)] right-[calc(33%-20px)] h-px border-t-2 border-dashed border-[#eeeeee] z-0 pointer-events-none"></div>
+
+      <!-- Step 1 -->
+      <div class="step-item active flex-1 flex flex-col items-center text-center gap-4 px-6 relative z-10">
+        <div class="step-circle w-14 h-14 rounded-full border-2 border-[#009ee3] bg-[#009ee3] flex items-center justify-center shadow-md">
+          <span class="material-symbols-outlined text-white icon-fill" style="font-size:26px">add_business</span>
+        </div>
+        <div class="w-7 h-7 rounded-full bg-[#009ee3] flex items-center justify-center -mt-2">
+          <span class="text-white font-bold text-[13px]">1</span>
+        </div>
+        <div>
+          <h3 class="step-title font-bold text-[#009ee3] text-[17px] mb-2">El docente crea el mercado</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Define la moneda (ej: "Aulis"), abre el mercado y agrega a los alumnos. También puede nombrar sub-administradores.</p>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-item flex-1 flex flex-col items-center text-center gap-4 px-6 relative z-10">
+        <div class="step-circle w-14 h-14 rounded-full border-2 border-[#eeeeee] bg-white flex items-center justify-center shadow-l1">
+          <span class="material-symbols-outlined text-[#6e7881]" style="font-size:26px">people</span>
+        </div>
+        <div class="w-7 h-7 rounded-full bg-[#eeeeee] flex items-center justify-center -mt-2">
+          <span class="text-[#6e7881] font-bold text-[13px]">2</span>
+        </div>
+        <div>
+          <h3 class="step-title font-bold text-[#1a1c1c] text-[17px] mb-2">Los alumnos operan</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Reciben saldo inicial, transfieren entre sí, compran en el catálogo y cobran por QR.</p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-item flex-1 flex flex-col items-center text-center gap-4 px-6 relative z-10">
+        <div class="step-circle w-14 h-14 rounded-full border-2 border-[#eeeeee] bg-white flex items-center justify-center shadow-l1">
+          <span class="material-symbols-outlined text-[#6e7881]" style="font-size:26px">insights</span>
+        </div>
+        <div class="w-7 h-7 rounded-full bg-[#eeeeee] flex items-center justify-center -mt-2">
+          <span class="text-[#6e7881] font-bold text-[13px]">3</span>
+        </div>
+        <div>
+          <h3 class="step-title font-bold text-[#1a1c1c] text-[17px] mb-2">Aprendizaje real</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">El docente puede ver el historial, cerrar el mercado y analizar los resultados con la clase.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile stepper (vertical) -->
+    <div class="md:hidden space-y-6">
+      <div class="step-item active flex gap-5">
+        <div class="flex flex-col items-center gap-1 flex-shrink-0">
+          <div class="step-circle w-12 h-12 rounded-full bg-[#009ee3] flex items-center justify-center shadow-md">
+            <span class="text-white font-bold text-[18px]">1</span>
+          </div>
+          <div class="w-px flex-1 bg-[#eeeeee]"></div>
+        </div>
+        <div class="pb-6">
+          <h3 class="step-title font-bold text-[#009ee3] text-[17px] mb-1">El docente crea el mercado</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Define la moneda, abre el mercado y agrega a los alumnos.</p>
+        </div>
+      </div>
+      <div class="step-item flex gap-5">
+        <div class="flex flex-col items-center gap-1 flex-shrink-0">
+          <div class="step-circle w-12 h-12 rounded-full border-2 border-[#eeeeee] bg-white flex items-center justify-center">
+            <span class="text-[#6e7881] font-bold text-[18px]">2</span>
+          </div>
+          <div class="w-px flex-1 bg-[#eeeeee]"></div>
+        </div>
+        <div class="pb-6">
+          <h3 class="step-title font-bold text-[#1a1c1c] text-[17px] mb-1">Los alumnos operan</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">Reciben saldo, transfieren, compran y cobran por QR.</p>
+        </div>
+      </div>
+      <div class="step-item flex gap-5">
+        <div class="flex flex-col items-center flex-shrink-0">
+          <div class="step-circle w-12 h-12 rounded-full border-2 border-[#eeeeee] bg-white flex items-center justify-center">
+            <span class="text-[#6e7881] font-bold text-[18px]">3</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="step-title font-bold text-[#1a1c1c] text-[17px] mb-1">Aprendizaje real</h3>
+          <p class="text-[14px] text-[#5f5e5e] leading-relaxed">El docente cierra el mercado y analiza los resultados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ INSTALACIÓN PWA ══════════ -->
+  <section id="instalacion" class="py-24" style="background: linear-gradient(135deg, #006492 0%, #004a6e 100%)">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 mb-4">
+          <span class="material-symbols-outlined text-white" style="font-size:28px">install_mobile</span>
+        </div>
+        <h2 class="text-[32px] sm:text-[40px] font-bold text-white tracking-tight">Instalala en tu celular<br>en 30 segundos</h2>
+        <p class="text-white/60 text-[15px] mt-3">Sin Play Store · Sin App Store · Funciona offline</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-6">
+
+        <!-- Android -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+              <span class="material-symbols-outlined text-white" style="font-size:22px">android</span>
+            </div>
+            <h3 class="font-bold text-white text-[18px]">Android (Chrome)</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">1</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">open_in_browser</span>
+                <span class="text-white/80 text-[14px]">Abrí la app en Chrome</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">2</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">more_vert</span>
+                <span class="text-white/80 text-[14px]">Tocá los tres puntos del menú</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">3</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">add_to_home_screen</span>
+                <span class="text-white/80 text-[14px]">"Agregar a pantalla de inicio"</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">4</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[#00ac46]" style="font-size:20px">check_circle</span>
+                <span class="text-white/80 text-[14px]">Confirmá · ¡Listo!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- iPhone -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+              <span class="material-symbols-outlined text-white" style="font-size:22px">phone_iphone</span>
+            </div>
+            <h3 class="font-bold text-white text-[18px]">iPhone (Safari)</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">1</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">open_in_browser</span>
+                <span class="text-white/80 text-[14px]">Abrí la app en Safari</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">2</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">ios_share</span>
+                <span class="text-white/80 text-[14px]">Tocá el botón compartir</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">3</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-white/70" style="font-size:20px">add_to_home_screen</span>
+                <span class="text-white/80 text-[14px]">"Agregar a pantalla de inicio"</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-[13px]">4</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[#00ac46]" style="font-size:20px">check_circle</span>
+                <span class="text-white/80 text-[14px]">Confirmá · ¡Listo!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Badge -->
+      <div class="mt-8 flex justify-center">
+        <div class="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-white/10 border border-white/15">
+          <span class="material-symbols-outlined text-white/60" style="font-size:18px">verified</span>
+          <span class="text-white/70 text-[13px] font-medium">Sin Play Store · Sin App Store · Funciona offline</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ PARA DOCENTES ══════════ -->
+  <section id="docentes" class="py-24 bg-white">
+    <div class="max-w-2xl mx-auto px-5 text-center space-y-6">
+      <div class="w-16 h-16 rounded-2xl bg-[#009ee3]/10 flex items-center justify-center mx-auto">
+        <span class="material-symbols-outlined text-[#009ee3] icon-fill" style="font-size:32px">school</span>
+      </div>
+
+      <h2 class="text-[32px] sm:text-[40px] font-bold text-[#1a1c1c] tracking-tight">Diseñado con y para<br>docentes</h2>
+
+      <p class="text-[16px] sm:text-[17px] text-[#5f5e5e] leading-relaxed">
+        AulaCash nació en el aula. Cada feature fue pensado para que el docente tenga control total y los alumnos una experiencia realista. Gratis, sin registro de tarjeta, sin publicidad.
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#009ee3]/10 text-[#006492] text-[13px] font-semibold">
+          <span class="material-symbols-outlined icon-fill" style="font-size:16px">check_circle</span>
+          Gratis para siempre
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#009ee3]/10 text-[#006492] text-[13px] font-semibold">
+          <span class="material-symbols-outlined icon-fill" style="font-size:16px">check_circle</span>
+          Sin datos sensibles
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#009ee3]/10 text-[#006492] text-[13px] font-semibold">
+          <span class="material-symbols-outlined icon-fill" style="font-size:16px">check_circle</span>
+          Sin publicidad
+        </span>
+      </div>
+
+      <div class="pt-2">
+        <a href="https://aulacash-frontend.onrender.com"
+           class="inline-flex items-center gap-2 h-14 px-10 bg-[#009ee3] text-white font-bold text-[16px] rounded-full shadow-lg hover:brightness-110 active:scale-[0.98] transition-all">
+          Empezar ahora
+          <span class="material-symbols-outlined" style="font-size:20px">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer style="background:#1a1c1c;" class="py-14">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="grid sm:grid-cols-3 gap-10 mb-10">
+
+        <!-- Logo + descripción -->
+        <div class="space-y-4">
+          <a href="#" class="flex items-center gap-2.5" aria-label="AulaCash">
+            <div class="w-9 h-9 rounded-xl bg-[#009ee3] flex items-center justify-center">
+              <span class="material-symbols-outlined text-white icon-fill" style="font-size:20px">account_balance_wallet</span>
+            </div>
+            <span class="font-bold text-[18px] text-white">AulaCash</span>
+          </a>
+          <p class="text-white/50 text-[13px] leading-relaxed max-w-xs">
+            Plataforma educativa de pagos digitales. Simulación para el aula, no dinero real.
+          </p>
+        </div>
+
+        <!-- Links -->
+        <div>
+          <p class="text-white/30 text-[11px] font-semibold uppercase tracking-widest mb-4">Navegación</p>
+          <div class="space-y-3">
+            <a href="#" class="block text-white/60 text-[14px] hover:text-white transition-colors">Inicio</a>
+            <a href="#caracteristicas" class="block text-white/60 text-[14px] hover:text-white transition-colors">Características</a>
+            <a href="#instalacion" class="block text-white/60 text-[14px] hover:text-white transition-colors">Instalación</a>
+            <a href="https://aulacash-frontend.onrender.com" class="block text-white/60 text-[14px] hover:text-white transition-colors">Panel docente</a>
+          </div>
+        </div>
+
+        <!-- Contacto -->
+        <div>
+          <p class="text-white/30 text-[11px] font-semibold uppercase tracking-widest mb-4">Contacto</p>
+          <div class="space-y-3">
+            <a href="mailto:soporte@aulacash.edu" class="flex items-center gap-2 text-white/60 text-[14px] hover:text-white transition-colors">
+              <span class="material-symbols-outlined" style="font-size:18px">mail</span>
+              soporte@aulacash.edu
+            </a>
+            <a href="https://github.com/pedroA37/AulaCash" target="_blank" rel="noopener" class="flex items-center gap-2 text-white/60 text-[14px] hover:text-white transition-colors">
+              <span class="material-symbols-outlined" style="font-size:18px">code</span>
+              Código en GitHub
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-white/30 text-[11px] text-center sm:text-left">
+          AulaCash — simulación educativa · Los saldos no representan dinero real · 2025
+        </p>
+        <p class="text-white/20 text-[11px]">Hecho con ♥ para docentes</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ══════════ JAVASCRIPT ══════════ -->
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    }, { passive: true });
+
+    // Mobile menu
+    const menuBtn = document.getElementById('menu-btn');
+    const drawer  = document.getElementById('mobile-drawer');
+    const overlay = document.getElementById('drawer-overlay');
+
+    function openMenu() {
+      drawer.classList.remove('translate-x-full');
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      drawer.classList.add('translate-x-full');
+      overlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    menuBtn.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+    // Stepper — Intersection Observer
+    const steps = document.querySelectorAll('.step-item');
+    const stepObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('active');
+      });
+    }, { threshold: 0.4 });
+    steps.forEach(s => stepObserver.observe(s));
+  </script>
+
+</body>
+</html>
