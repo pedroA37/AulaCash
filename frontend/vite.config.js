@@ -16,7 +16,7 @@ export default defineConfig({
         description: 'Plataforma educativa de pagos digitales',
         theme_color: '#006492',
         background_color: '#f9f9f9',
-        display: 'standalone',
+        display: 'fullscreen',
         orientation: 'portrait',
         start_url: '/',
         icons: [
