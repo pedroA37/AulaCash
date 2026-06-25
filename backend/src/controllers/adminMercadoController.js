@@ -78,8 +78,9 @@ async function getMercado(req, res) {
      FROM mercado_usuarios mu
      JOIN usuarios u ON u.id = mu.usuario_id
      WHERE mu.mercado_id = $1
+     AND mu.usuario_id != $2
      ORDER BY mu.joined_at ASC`,
-    [id]
+    [id, req.user.id]
   );
 
   const { rows: pseudo_admins } = await pool.query(
