@@ -21,6 +21,14 @@ services:
       - key: EMAIL_FROM
         sync: false
 
+  # ── LANDING ──────────────────────────────────────────────
+  - type: web
+    name: aulacash-landing
+    runtime: static
+    rootDir: landing
+    staticPublishPath: .
+    plan: free
+
   # ── FRONTEND ─────────────────────────────────────────────
   - type: web
     name: aulacash-frontend
