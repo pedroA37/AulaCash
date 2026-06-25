@@ -6,7 +6,7 @@ import api from '../services/api';
 export default function Registro() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ dni: '', email: '', password: '', nombre: '', apellido: '', rol: 'user' });
+  const [form, setForm] = useState({ dni: '', email: '', password: '', nombre: '', apellido: '' });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -25,7 +25,7 @@ export default function Registro() {
     try {
       const { data } = await api.post('/auth/registro', form);
       login(data.token, data.usuario);
-      navigate(form.rol === 'admin' ? '/mercados' : '/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data?.errores?.[0]?.msg || 'Error al registrarse');
     } finally {
@@ -33,7 +33,6 @@ export default function Registro() {
     }
   }
 
-  const esAdmin = form.rol === 'admin';
   const inputClass = "w-full mt-1 h-12 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px] text-[#1a1c1c]";
   const labelClass = "text-[12px] font-semibold text-[#6e7881] uppercase tracking-wider";
 
@@ -41,43 +40,12 @@ export default function Registro() {
     <div className="min-h-dvh flex flex-col items-center justify-center px-5 py-8 bg-[#f9f9f9]">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 elevation-l2 transition-colors ${esAdmin ? 'bg-[#006492]' : 'bg-[#009ee3]'}`}>
-            <span className="material-symbols-outlined text-white text-[28px]">
-              {esAdmin ? 'admin_panel_settings' : 'account_balance_wallet'}
-            </span>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 elevation-l2 bg-[#009ee3]">
+            <span className="material-symbols-outlined text-white text-[28px]">account_balance_wallet</span>
           </div>
           <h1 className="text-[24px] font-bold text-[#1a1c1c]">Crear cuenta</h1>
           <p className="text-[13px] text-[#5f5e5e] mt-1">AulaCash — simulación educativa</p>
         </div>
-
-        {/* Toggle rol */}
-        <div className="flex bg-[#eeeeee] rounded-xl p-1 mb-4 gap-1">
-          <button
-            type="button"
-            onClick={() => setForm({ ...form, rol: 'user' })}
-            className={`flex-1 h-10 rounded-lg text-[14px] font-semibold transition-all flex items-center justify-center gap-1.5 ${!esAdmin ? 'bg-white text-[#009ee3] elevation-l1' : 'text-[#5f5e5e]'}`}
-          >
-            <span className="material-symbols-outlined text-[16px]">person</span>
-            Participante
-          </button>
-          <button
-            type="button"
-            onClick={() => setForm({ ...form, rol: 'admin' })}
-            className={`flex-1 h-10 rounded-lg text-[14px] font-semibold transition-all flex items-center justify-center gap-1.5 ${esAdmin ? 'bg-white text-[#006492] elevation-l1' : 'text-[#5f5e5e]'}`}
-          >
-            <span className="material-symbols-outlined text-[16px]">storefront</span>
-            Organizador
-          </button>
-        </div>
-
-        {esAdmin && (
-          <div className="bg-[#006492]/10 rounded-xl px-4 py-3 mb-4 flex items-start gap-2">
-            <span className="material-symbols-outlined text-[#006492] text-[18px] mt-0.5 flex-shrink-0">info</span>
-            <p className="text-[13px] text-[#006492]">
-              Como organizador podés crear y gestionar mercados educativos para tus alumnos.
-            </p>
-          </div>
-        )}
 
         <div className="bg-white rounded-2xl p-6 elevation-l1">
           {error && (
@@ -116,9 +84,9 @@ export default function Registro() {
             <button
               type="submit"
               disabled={cargando}
-              className={`w-full h-14 text-white font-bold text-[16px] rounded-full shadow-lg active:scale-[0.98] transition-all duration-200 disabled:opacity-60 ${esAdmin ? 'bg-[#006492]' : 'bg-[#009ee3]'}`}
+              className="w-full h-14 text-white font-bold text-[16px] rounded-full shadow-lg active:scale-[0.98] transition-all duration-200 disabled:opacity-60 bg-[#009ee3]"
             >
-              {cargando ? 'Creando cuenta...' : esAdmin ? 'Crear cuenta de organizador' : 'Crear cuenta'}
+              {cargando ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
           </form>
         </div>
