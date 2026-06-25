@@ -24,12 +24,22 @@ export default function AdminUsuarioDetalle() {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [cambiandoRol, setCambiandoRol] = useState(false);
   const [error, setError] = useState('');
+  const [mercadosUsuario, setMercadosUsuario] = useState([]);
+  const [mostrarCargar, setMostrarCargar] = useState(false);
+  const [mercadoCargarId, setMercadoCargarId] = useState('');
+  const [montoCargar, setMontoCargar] = useState('');
+  const [cargandoSaldo, setCargandoSaldo] = useState(false);
+  const [mensajeCargar, setMensajeCargar] = useState('');
+  const [errorCargar, setErrorCargar] = useState('');
   const LIMIT = 20;
 
   useEffect(() => {
     api.get(`/admin/usuarios/${id}`)
       .then(({ data }) => setUsuario(data))
       .catch(() => navigate(-1));
+    api.get(`/admin/usuarios/${id}/mercados`)
+      .then(({ data }) => setMercadosUsuario(data))
+      .catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -55,6 +65,28 @@ export default function AdminUsuarioDetalle() {
       setError(err.response?.data?.error || 'Error al cambiar el rol');
     } finally {
       setCambiandoRol(false);
+    }
+  }
+
+  async function handleCargarSaldo(e) {
+    e.preventDefault();
+    setCargandoSaldo(true);
+    setErrorCargar('');
+    try {
+      await api.post('/admin/cargar-saldo', {
+        usuario_id: parseInt(id),
+        mercado_id: parseInt(mercadoCargarId),
+        monto: parseFloat(montoCargar),
+      });
+      setMensajeCargar('Saldo acreditado correctamente');
+      setMontoCargar('');
+      setMercadoCargarId('');
+      setMostrarCargar(false);
+      setTimeout(() => setMensajeCargar(''), 3000);
+    } catch (err) {
+      setErrorCargar(err.response?.data?.error || 'Error al cargar saldo');
+    } finally {
+      setCargandoSaldo(false);
     }
   }
 
@@ -112,15 +144,56 @@ export default function AdminUsuarioDetalle() {
               ))}
             </div>
 
+            {mensajeCargar && (
+              <div className="mt-3 bg-[#00ac46]/10 text-[#006e2a] rounded-xl px-4 py-3 text-[14px] font-semibold">{mensajeCargar}</div>
+            )}
             <button
-              onClick={() => {
-                sessionStorage.setItem('admin_cargar_id', String(usuario.id));
-                navigate(-1);
-              }}
+              onClick={() => { setMostrarCargar((v) => !v); setErrorCargar(''); }}
               className="w-full mt-4 h-11 bg-[#009ee3]/10 text-[#006492] font-semibold text-[14px] rounded-xl"
             >
-              Cargar saldo a este usuario
+              {mostrarCargar ? 'Cancelar' : 'Cargar saldo a este usuario'}
             </button>
+            {mostrarCargar && (
+              <form onSubmit={handleCargarSaldo} className="mt-3 space-y-3">
+                {mercadosUsuario.length === 0 ? (
+                  <p className="text-[13px] text-[#5f5e5e] text-center py-2">El usuario no participa en ningún mercado</p>
+                ) : (
+                  <>
+                    <select
+                      value={mercadoCargarId}
+                      onChange={(e) => setMercadoCargarId(e.target.value)}
+                      className="w-full h-11 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[14px] text-[#1a1c1c]"
+                      required
+                    >
+                      <option value="">Seleccioná un mercado</option>
+                      {mercadosUsuario.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nombre} — {m.moneda_acronimo} (saldo: {Number(m.saldo).toFixed(2)})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={montoCargar}
+                      onChange={(e) => setMontoCargar(e.target.value)}
+                      placeholder="Monto a acreditar"
+                      className="w-full h-11 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[14px] text-[#1a1c1c]"
+                      required
+                    />
+                    {errorCargar && <p className="text-[13px] text-[#ba1a1a]">{errorCargar}</p>}
+                    <button
+                      type="submit"
+                      disabled={cargandoSaldo}
+                      className="w-full h-11 bg-[#009ee3] text-white font-semibold text-[14px] rounded-xl disabled:opacity-60 active:scale-[0.98] transition-all"
+                    >
+                      {cargandoSaldo ? 'Acreditando...' : 'Confirmar carga'}
+                    </button>
+                  </>
+                )}
+              </form>
+            )}
 
             {adminActual?.id !== usuario.id && (
               <>

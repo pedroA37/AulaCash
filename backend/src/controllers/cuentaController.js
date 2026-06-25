@@ -55,8 +55,8 @@ async function actualizarAlias(req, res) {
   if (!alias || !alias.trim()) return res.status(400).json({ error: 'Alias requerido' });
 
   const aliasLimpio = alias.trim().toLowerCase();
-  if (!/^[a-z0-9]+(\.[a-z0-9]+){1,3}$/.test(aliasLimpio)) {
-    return res.status(400).json({ error: 'El alias solo puede tener letras, números y puntos (ej: rio.azul.1234)' });
+  if (!/^[a-z0-9]+(\.[a-z0-9]+){0,3}$/.test(aliasLimpio)) {
+    return res.status(400).json({ error: 'El alias solo puede tener letras minúsculas y números, opcionalmente separados por puntos (ej: juanito o rio.azul.1234)' });
   }
 
   const { rowCount } = await pool.query(
