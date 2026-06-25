@@ -5,7 +5,7 @@ const pool = require('../config/db');
 const { generarAliasUnico, generarCBUUnico } = require('../services/generadores');
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function generarToken(usuario) {
   return jwt.sign(
