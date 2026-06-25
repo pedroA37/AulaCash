@@ -101,7 +101,7 @@ export default function AdminMercadoDetalle() {
           nombre: data.nombre || '',
           moneda_nombre: data.moneda_nombre || '',
           moneda_acronimo: data.moneda_acronimo || '',
-          hora_cierre: data.hora_cierre ? new Date(data.hora_cierre).toISOString().slice(0, 16) : '',
+          hora_cierre: data.hora_cierre ? (() => { const d = new Date(data.hora_cierre); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })() : '',
         });
         setCargando(false);
       })
@@ -261,7 +261,7 @@ export default function AdminMercadoDetalle() {
         nombre: formConfig.nombre.trim() || undefined,
         moneda_nombre: formConfig.moneda_nombre.trim() || undefined,
         moneda_acronimo: formConfig.moneda_acronimo.trim() || undefined,
-        hora_cierre: formConfig.hora_cierre || null,
+        hora_cierre: formConfig.hora_cierre ? new Date(formConfig.hora_cierre).toISOString() : null,
       });
       showMsg('Configuración guardada');
       cargar();
