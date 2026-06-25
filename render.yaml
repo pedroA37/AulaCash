@@ -1,0 +1,38 @@
+services:
+  # ── BACKEND ──────────────────────────────────────────────
+  - type: web
+    name: aulacash-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # setear manualmente en el dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false          # URL del frontend (después del primer deploy)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+
+  # ── FRONTEND ─────────────────────────────────────────────
+  - type: web
+    name: aulacash-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        sync: false          # URL del backend + /api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

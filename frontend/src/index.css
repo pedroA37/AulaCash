@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #006492;
+  --color-primary-container: #009ee3;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #00314a;
+  --color-inverse-primary: #8bceff;
+  --color-primary-fixed: #c9e6ff;
+  --color-primary-fixed-dim: #8bceff;
+  --color-on-primary-fixed: #001e2f;
+  --color-on-primary-fixed-variant: #004b6f;
+
+  --color-secondary: #5f5e5e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e5e2e1;
+  --color-on-secondary-container: #656464;
+  --color-secondary-fixed: #e5e2e1;
+  --color-secondary-fixed-dim: #c8c6c5;
+  --color-on-secondary-fixed: #1c1b1b;
+  --color-on-secondary-fixed-variant: #474646;
+
+  --color-tertiary: #006e2a;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #00ac46;
+  --color-on-tertiary-container: #003611;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-surface: #f9f9f9;
+  --color-surface-dim: #dadada;
+  --color-surface-bright: #f9f9f9;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f3f3;
+  --color-surface-container: #eeeeee;
+  --color-surface-container-high: #e8e8e8;
+  --color-surface-container-highest: #e2e2e2;
+  --color-surface-variant: #e2e2e2;
+  --color-on-surface: #1a1c1c;
+  --color-on-surface-variant: #3e4850;
+  --color-inverse-surface: #2f3131;
+  --color-inverse-on-surface: #f1f1f1;
+  --color-outline: #6e7881;
+  --color-outline-variant: #bec8d2;
+  --color-background: #f9f9f9;
+  --color-on-background: #1a1c1c;
+
+  --font-sans: 'Inter', sans-serif;
+}
+
+/* html/body con overflow-x: hidden propaga al viewport sin crear scroll container,
+   evitando que fixed elements queden contenidos en un div intermedio */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9f9f9;
+  color: #1a1c1c;
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.elevation-l1 {
+  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.04);
+}
+.elevation-l2 {
+  box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.08);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Suprimir UI extra de html5-qrcode y contener sus elementos */
+#qr-reader__dashboard { display: none !important; }
+#qr-reader__scan_region img { display: none !important; }
+#qr-reader__scan_region {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+#qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
