@@ -649,7 +649,7 @@ export default function AdminMercadoDetalle() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelClass}>Nombre de la moneda</label>
+                    <label className={labelClass}>Moneda</label>
                     <input type="text" value={formConfig.moneda_nombre}
                       onChange={(e) => setFormConfig((f) => ({ ...f, moneda_nombre: e.target.value }))}
                       className={inputClass} placeholder="Aulis" required />
