@@ -18,9 +18,6 @@ async function infoPorCodigo(req, res) {
 }
 
 async function unirseAlMercado(req, res) {
-  if (req.user.rol === 'admin') {
-    return res.status(403).json({ error: 'Los administradores no pueden unirse a mercados como participantes' });
-  }
   const { codigo } = req.body;
   if (!codigo) return res.status(400).json({ error: 'El código es requerido' });
 

@@ -1,9 +1,9 @@
 const router = require('express').Router();
-const { requireAdmin } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { requireMercadoAdmin } = require('../middleware/mercadoAuth');
 const c = require('../controllers/adminMercadoController');
 
-router.use(requireAdmin);
+router.use(requireAuth);
 
 router.post('/', c.crearMercado);
 router.get('/', c.listarMercados);

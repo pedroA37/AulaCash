@@ -89,6 +89,10 @@ async function cargarSaldo(req, res) {
     return res.status(400).json({ error: 'Monto inválido' });
   }
 
+  const { rows: [mercado] } = await pool.query('SELECT admin_id FROM mercados WHERE id = $1', [mercado_id]);
+  if (!mercado) return res.status(404).json({ error: 'Mercado no encontrado' });
+  if (mercado.admin_id !== req.user.id) return res.status(403).json({ error: 'No sos el administrador de este mercado' });
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

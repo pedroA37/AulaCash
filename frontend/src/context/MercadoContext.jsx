@@ -18,27 +18,20 @@ export function MercadoProvider({ children }) {
     }
 
     setCargandoMercados(true);
-    const endpoint = usuario.rol === 'admin' ? '/admin/mercados' : '/mercados/mis-mercados';
 
-    api.get(endpoint)
+    api.get('/mercados/mis-mercados')
       .then(({ data }) => {
         setMercados(data);
-
-        const esAdmin = usuario.rol === 'admin';
 
         const savedId = localStorage.getItem('mercado_activo_id');
         if (savedId) {
           const encontrado = data.find((m) => String(m.id) === savedId);
-          // Para usuarios: solo restaurar si el mercado está abierto
-          if (encontrado && (esAdmin || encontrado.estado === 'abierto')) {
+          if (encontrado && encontrado.estado !== 'cerrado') {
             setMercadoActivo(encontrado);
             return;
           }
         }
-        // Auto-seleccionar: admins cualquier estado no cerrado, usuarios solo abierto
-        const candidatos = esAdmin
-          ? data.filter((m) => m.estado !== 'cerrado')
-          : data.filter((m) => m.estado === 'abierto');
+        const candidatos = data.filter((m) => m.estado === 'abierto');
         if (candidatos.length === 1) setMercadoActivo(candidatos[0]);
       })
       .catch(() => {})
@@ -58,9 +51,8 @@ export function MercadoProvider({ children }) {
 
   async function refrescarMercados() {
     if (!usuario) return;
-    const endpoint = usuario.rol === 'admin' ? '/admin/mercados' : '/mercados/mis-mercados';
     try {
-      const { data } = await api.get(endpoint);
+      const { data } = await api.get('/mercados/mis-mercados');
       setMercados(data);
       if (mercadoActivo) {
         const actualizado = data.find((m) => m.id === mercadoActivo.id);

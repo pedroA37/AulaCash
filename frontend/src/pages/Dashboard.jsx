@@ -42,10 +42,12 @@ export default function Dashboard() {
   const [cargandoMercado, setCargandoMercado] = useState(false);
   const [datosMercadoAdmin, setDatosMercadoAdmin] = useState(null);
 
-  const esAdmin = usuario?.rol === 'admin';
-  const mercadosAbiertos = esAdmin ? [] : mercados.filter((m) => m.estado === 'abierto');
+  const esAdmin = mercadoActivo?.admin_id === usuario?.id;
+  const mercadosSeleccionables = mercados.filter((m) =>
+    m.admin_id === usuario?.id ? m.estado !== 'cerrado' : m.estado === 'abierto'
+  );
   const hayMercadoAbierto = mercadoActivo?.estado === 'abierto';
-  const valorCombo = hayMercadoAbierto ? String(mercadoActivo.id) : '';
+  const valorCombo = mercadoActivo ? String(mercadoActivo.id) : '';
 
   useEffect(() => {
     if (!mercadoActivo || !hayMercadoAbierto) { setMovimientos([]); return; }
@@ -73,7 +75,7 @@ export default function Dashboard() {
   if (!usuario) return null;
 
   function handleCambioMercado(e) {
-    const m = mercadosAbiertos.find((x) => String(x.id) === e.target.value);
+    const m = mercadosSeleccionables.find((x) => String(x.id) === e.target.value);
     seleccionarMercado(m || null);
   }
 
@@ -102,6 +104,30 @@ export default function Dashboard() {
             {avatarInicial}
           </button>
         </header>
+
+        {/* Selector de mercado para admin */}
+        {mercadosSeleccionables.length > 1 && (
+          <div className="bg-white rounded-2xl p-4 elevation-l1 mb-3">
+            <p className="text-[11px] font-bold text-[#8a9aa6] uppercase tracking-wider mb-2 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">storefront</span>
+              Mercado activo
+            </p>
+            <div className="relative">
+              <select
+                value={valorCombo}
+                onChange={handleCambioMercado}
+                className="w-full h-11 px-4 pr-10 bg-[#f4f6f8] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[15px] font-semibold text-[#1a1c1c] appearance-none"
+              >
+                {mercadosSeleccionables.map((m) => (
+                  <option key={m.id} value={String(m.id)}>{m.nombre}</option>
+                ))}
+              </select>
+              <span className="material-symbols-outlined text-[#8a9aa6] text-[20px] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                expand_more
+              </span>
+            </div>
+          </div>
+        )}
 
         {!mercadoActivo ? (
           <div className="flex flex-col items-center justify-center py-16 gap-5 text-center">
@@ -208,10 +234,10 @@ export default function Dashboard() {
           <span className="material-symbols-outlined text-[14px]">storefront</span>
           Mercado activo
         </p>
-        {mercadosAbiertos.length === 0 ? (
+        {mercadosSeleccionables.length === 0 ? (
           <div className="flex items-center gap-2 py-0.5">
             <span className="material-symbols-outlined text-[#bec8d2] text-[20px]">storefront</span>
-            <p className="text-[14px] text-[#8a9aa6]">No tenés mercados abiertos</p>
+            <p className="text-[14px] text-[#8a9aa6]">No tenés mercados disponibles</p>
           </div>
         ) : (
           <div className="relative">
@@ -221,7 +247,7 @@ export default function Dashboard() {
               className="w-full h-11 px-4 pr-10 bg-[#f4f6f8] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[15px] font-semibold text-[#1a1c1c] appearance-none"
             >
               <option value="">Seleccioná un mercado</option>
-              {mercadosAbiertos.map((m) => (
+              {mercadosSeleccionables.map((m) => (
                 <option key={m.id} value={String(m.id)}>{m.nombre}</option>
               ))}
             </select>
@@ -374,7 +400,7 @@ export default function Dashboard() {
       )}
 
       {/* ── Estado vacío ── */}
-      {!hayMercadoAbierto && mercadosAbiertos.length === 0 && (
+      {!mercadoActivo && mercadosSeleccionables.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
           <div className="w-20 h-20 rounded-3xl bg-white elevation-l1 flex items-center justify-center">
             <span className="material-symbols-outlined text-[#bec8d2] text-[44px]">storefront</span>

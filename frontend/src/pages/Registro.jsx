@@ -6,7 +6,6 @@ import api from '../services/api';
 export default function Registro() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [rol, setRol] = useState('user');
   const [form, setForm] = useState({ dni: '', email: '', password: '', nombre: '', apellido: '' });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -24,7 +23,7 @@ export default function Registro() {
     }
     setCargando(true);
     try {
-      const { data } = await api.post('/auth/registro', { ...form, rol });
+      const { data } = await api.post('/auth/registro', form);
       login(data.token, data.usuario);
       navigate('/dashboard');
     } catch (err) {
@@ -56,32 +55,6 @@ export default function Registro() {
           </div>
           <h1 className="text-[26px] font-bold text-[#006492] tracking-tight">AulaCash</h1>
           <p className="text-[13px] text-[#8a9aa6] mt-1">Creá tu cuenta</p>
-        </div>
-
-        {/* Selector de rol */}
-        <div className="flex bg-white rounded-2xl p-1 mb-3 elevation-l1">
-          {[
-            { value: 'user',  label: 'Usuario',       icon: 'school' },
-            { value: 'admin', label: 'Administrador', icon: 'admin_panel_settings' },
-          ].map(({ value, label, icon }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setRol(value)}
-              className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-[14px] font-bold transition-all duration-200 ${
-                rol === value ? 'text-white' : 'text-[#8a9aa6]'
-              }`}
-              style={rol === value ? { background: 'linear-gradient(135deg, #006492, #009ee3)' } : {}}
-            >
-              <span
-                className="material-symbols-outlined text-[18px]"
-                style={{ fontVariationSettings: rol === value ? "'FILL' 1" : "'FILL' 0" }}
-              >
-                {icon}
-              </span>
-              {label}
-            </button>
-          ))}
         </div>
 
         {/* Tarjeta */}
@@ -126,7 +99,7 @@ export default function Registro() {
               className="w-full text-white font-bold text-[16px] rounded-2xl active:scale-[0.98] transition-transform disabled:opacity-60 elevation-l1 py-3.5"
               style={{ background: 'linear-gradient(135deg, #006492, #009ee3)' }}
             >
-              {cargando ? 'Creando cuenta...' : `Registrarse como ${rol === 'admin' ? 'administrador' : 'usuario'}`}
+              {cargando ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
           </form>
         </div>

@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { MercadoProvider } from './context/MercadoContext';
+import { MercadoProvider, useMercado } from './context/MercadoContext';
 
 import Login from './pages/Login';
 import Registro from './pages/Registro';
@@ -16,19 +16,21 @@ import AdminUsuarioDetalle from './pages/AdminUsuarioDetalle';
 import Mercados from './pages/Mercados';
 import MercadoDetalle from './pages/MercadoDetalle';
 import UnirseAlMercado from './pages/UnirseAlMercado';
-import AdminMercados from './pages/AdminMercados';
 import AdminMercadoDetalle from './pages/AdminMercadoDetalle';
 import PseudoAdminMercado from './pages/PseudoAdminMercado';
 import Spinner from './components/Spinner';
 
-function RutaMercados() {
-  const { usuario } = useAuth();
-  return usuario?.rol === 'admin' ? <AdminMercados /> : <Mercados />;
-}
-
 function RutaMercadoDetalle() {
+  const { id } = useParams();
   const { usuario } = useAuth();
-  return usuario?.rol === 'admin' ? <AdminMercadoDetalle /> : <MercadoDetalle />;
+  const { mercados, cargandoMercados } = useMercado();
+
+  if (cargandoMercados) return (
+    <div className="min-h-dvh flex items-center justify-center"><Spinner size={40} /></div>
+  );
+
+  const mercado = mercados.find((m) => String(m.id) === id);
+  return mercado?.admin_id === usuario?.id ? <AdminMercadoDetalle /> : <MercadoDetalle />;
 }
 
 function RutaPrivada({ children }) {
@@ -81,7 +83,7 @@ export default function App() {
           <Route path="/historial" element={<RutaPrivada><Historial /></RutaPrivada>} />
           <Route path="/perfil" element={<RutaPrivada><Perfil /></RutaPrivada>} />
 
-          <Route path="/mercados" element={<RutaPrivada><RutaMercados /></RutaPrivada>} />
+          <Route path="/mercados" element={<RutaPrivada><Mercados /></RutaPrivada>} />
           <Route path="/mercados/unirse" element={<RutaPrivada><UnirseAlMercado /></RutaPrivada>} />
           <Route path="/mercados/unirse/:codigo" element={<RutaPrivada><UnirseAlMercado /></RutaPrivada>} />
           <Route path="/mercados/:id" element={<RutaPrivada><RutaMercadoDetalle /></RutaPrivada>} />
