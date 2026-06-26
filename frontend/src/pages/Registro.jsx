@@ -61,8 +61,8 @@ export default function Registro() {
         {/* Selector de rol */}
         <div className="flex bg-white rounded-2xl p-1 mb-3 elevation-l1">
           {[
-            { value: 'user',  label: 'Alumno',  icon: 'school' },
-            { value: 'admin', label: 'Docente', icon: 'admin_panel_settings' },
+            { value: 'user',  label: 'Usuario',       icon: 'school' },
+            { value: 'admin', label: 'Administrador', icon: 'admin_panel_settings' },
           ].map(({ value, label, icon }) => (
             <button
               key={value}
@@ -126,7 +126,7 @@ export default function Registro() {
               className="w-full text-white font-bold text-[16px] rounded-2xl active:scale-[0.98] transition-transform disabled:opacity-60 elevation-l1 py-3.5"
               style={{ background: 'linear-gradient(135deg, #006492, #009ee3)' }}
             >
-              {cargando ? 'Creando cuenta...' : `Registrarse como ${rol === 'admin' ? 'docente' : 'alumno'}`}
+              {cargando ? 'Creando cuenta...' : `Registrarse como ${rol === 'admin' ? 'administrador' : 'usuario'}`}
             </button>
           </form>
         </div>
