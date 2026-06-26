@@ -19,16 +19,61 @@ function fmt(n) {
   return Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2 });
 }
 
+function MercadoCard({ m, esAdmin, navigate }) {
+  const badge   = BADGE[m.estado] || BADGE.borrador;
+  const cierra30 = m.estado === 'abierto' && m.notificacion_30_enviada;
+  return (
+    <button
+      onClick={() => navigate(`/mercados/${m.id}`)}
+      className="w-full bg-white rounded-2xl p-4 elevation-l1 text-left active:scale-[0.98] transition-all"
+    >
+      {cierra30 && (
+        <div className="mb-3 bg-[#ffb950]/20 text-[#8a5000] rounded-xl px-3 py-2 text-[12px] font-semibold flex items-center gap-2">
+          <span className="material-symbols-outlined text-[15px]">timer</span>
+          Cierra en menos de 30 min
+        </div>
+      )}
+      <div className="flex items-center gap-3">
+        {m.logo_url ? (
+          <img src={m.logo_url} alt={m.nombre} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+        ) : (
+          <div className="w-11 h-11 rounded-xl bg-[#009ee3]/10 flex items-center justify-center flex-shrink-0">
+            <span className="material-symbols-outlined text-[#006492] text-[22px]">storefront</span>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-bold text-[#1a1c1c]">{m.nombre}</p>
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${badge.cls}`}>
+              {badge.label}
+            </span>
+          </div>
+          <p className="text-[12px] text-[#5f5e5e]">{m.moneda_nombre} ({m.moneda_acronimo})</p>
+        </div>
+        {esAdmin ? (
+          <span className="material-symbols-outlined text-[#bec8d2] flex-shrink-0">chevron_right</span>
+        ) : (
+          <div className="text-right flex-shrink-0">
+            <p className="font-bold text-[#1a1c1c]">{fmt(m.saldo)}</p>
+            <p className="text-[11px] text-[#5f5e5e]">{m.moneda_acronimo}</p>
+          </div>
+        )}
+      </div>
+    </button>
+  );
+}
+
 export default function Mercados() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
   const { mercados, cargandoMercados, refrescarMercados } = useMercado();
 
+  const [busqueda, setBusqueda]     = useState('');
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [form, setForm] = useState({ nombre: '', logo_url: '', moneda_nombre: '', moneda_acronimo: '' });
-  const [creando, setCreando] = useState(false);
-  const [error, setError] = useState('');
-  const [mensaje, setMensaje] = useState('');
+  const [form, setForm]             = useState({ nombre: '', logo_url: '', moneda_nombre: '', moneda_acronimo: '' });
+  const [creando, setCreando]       = useState(false);
+  const [error, setError]           = useState('');
+  const [mensaje, setMensaje]       = useState('');
 
   useEffect(() => { refrescarMercados(); }, []);
 
@@ -40,9 +85,9 @@ export default function Mercados() {
     setCreando(true); setError('');
     try {
       const { data } = await api.post('/admin/mercados', {
-        nombre: form.nombre.trim(),
-        logo_url: form.logo_url.trim() || undefined,
-        moneda_nombre: form.moneda_nombre.trim(),
+        nombre:          form.nombre.trim(),
+        logo_url:        form.logo_url.trim() || undefined,
+        moneda_nombre:   form.moneda_nombre.trim(),
         moneda_acronimo: form.moneda_acronimo.trim(),
       });
       setMensaje('Mercado creado correctamente');
@@ -58,12 +103,17 @@ export default function Mercados() {
     }
   }
 
+  const q = busqueda.trim().toLowerCase();
+  const misMercados     = mercados.filter((m) => m.admin_id === usuario?.id && (!q || m.nombre.toLowerCase().includes(q)));
+  const otrosMercados   = mercados.filter((m) => m.admin_id !== usuario?.id && (!q || m.nombre.toLowerCase().includes(q)));
+  const hayResultados   = misMercados.length > 0 || otrosMercados.length > 0;
+
   return (
     <Layout titulo="Mercados">
       <div className="space-y-3">
 
         {mensaje && <div className="bg-[#00ac46]/10 text-[#006e2a] rounded-xl px-4 py-3 text-[14px] font-semibold">{mensaje}</div>}
-        {error && <div className="bg-[#ffdad6] text-[#93000a] rounded-xl px-4 py-3 text-[14px]">{error}</div>}
+        {error   && <div className="bg-[#ffdad6] text-[#93000a] rounded-xl px-4 py-3 text-[14px]">{error}</div>}
 
         {/* Acciones principales */}
         <div className="flex gap-2">
@@ -118,7 +168,31 @@ export default function Mercados() {
           </div>
         )}
 
-        {/* Lista de mercados */}
+        {/* Buscador */}
+        {!cargandoMercados && mercados.length > 0 && (
+          <div className="relative">
+            <span className="material-symbols-outlined text-[#bec8d2] text-[20px] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              search
+            </span>
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar mercado..."
+              className="w-full h-12 pl-11 pr-4 bg-white rounded-2xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[15px] text-[#1a1c1c] elevation-l1"
+            />
+            {busqueda && (
+              <button
+                onClick={() => setBusqueda('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#bec8d2] active:text-[#5f5e5e] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Listas */}
         {cargandoMercados ? (
           <div className="flex justify-center py-12"><Spinner size={36} /></div>
         ) : mercados.length === 0 ? (
@@ -127,59 +201,50 @@ export default function Mercados() {
             <p className="text-[15px] font-semibold text-[#1a1c1c] mt-3">Todavía no participás en ningún mercado</p>
             <p className="text-[13px] text-[#5f5e5e] mt-1">Creá uno o usá el código de acceso del organizador</p>
           </div>
+        ) : !hayResultados ? (
+          <div className="bg-white rounded-2xl p-6 text-center elevation-l1">
+            <span className="material-symbols-outlined text-[#bec8d2] text-[40px]">search_off</span>
+            <p className="text-[14px] text-[#5f5e5e] mt-2">Sin resultados para "<strong>{busqueda}</strong>"</p>
+          </div>
         ) : (
-          <div className="space-y-2">
-            {mercados.map((m) => {
-              const badge = BADGE[m.estado] || BADGE.borrador;
-              const esAdmin = m.admin_id === usuario?.id;
-              const cierra30 = m.estado === 'abierto' && m.notificacion_30_enviada;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => navigate(`/mercados/${m.id}`)}
-                  className="w-full bg-white rounded-2xl p-4 elevation-l1 text-left active:scale-[0.98] transition-all"
-                >
-                  {cierra30 && (
-                    <div className="mb-3 bg-[#ffb950]/20 text-[#8a5000] rounded-xl px-3 py-2 text-[12px] font-semibold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[15px]">timer</span>
-                      Cierra en menos de 30 min
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    {m.logo_url ? (
-                      <img src={m.logo_url} alt={m.nombre} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-11 h-11 rounded-xl bg-[#009ee3]/10 flex items-center justify-center flex-shrink-0">
-                        <span className="material-symbols-outlined text-[#006492] text-[22px]">storefront</span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-bold text-[#1a1c1c]">{m.nombre}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${badge.cls}`}>
-                          {badge.label}
-                        </span>
-                        {esAdmin && (
-                          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#006492]/10 text-[#006492]">
-                            Admin
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[12px] text-[#5f5e5e]">{m.moneda_nombre} ({m.moneda_acronimo})</p>
-                    </div>
-                    {!esAdmin && (
-                      <div className="text-right flex-shrink-0">
-                        <p className="font-bold text-[#1a1c1c]">{fmt(m.saldo)}</p>
-                        <p className="text-[11px] text-[#5f5e5e]">{m.moneda_acronimo}</p>
-                      </div>
-                    )}
-                    {esAdmin && (
-                      <span className="material-symbols-outlined text-[#bec8d2] flex-shrink-0">chevron_right</span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="space-y-4">
+
+            {/* ── Mis mercados ── */}
+            {misMercados.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="material-symbols-outlined text-[#006492] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    manage_accounts
+                  </span>
+                  <h2 className="text-[13px] font-bold text-[#006492] uppercase tracking-wider">Mis mercados</h2>
+                  <span className="text-[12px] text-[#8a9aa6] font-semibold">{misMercados.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {misMercados.map((m) => (
+                    <MercadoCard key={m.id} m={m} esAdmin navigate={navigate} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Mercados a los que pertenezco ── */}
+            {otrosMercados.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="material-symbols-outlined text-[#009ee3] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    group
+                  </span>
+                  <h2 className="text-[13px] font-bold text-[#009ee3] uppercase tracking-wider">Mercados a los que pertenezco</h2>
+                  <span className="text-[12px] text-[#8a9aa6] font-semibold">{otrosMercados.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {otrosMercados.map((m) => (
+                    <MercadoCard key={m.id} m={m} esAdmin={false} navigate={navigate} />
+                  ))}
+                </div>
+              </section>
+            )}
+
           </div>
         )}
       </div>
