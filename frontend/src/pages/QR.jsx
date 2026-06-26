@@ -272,8 +272,8 @@ function EscanearQR() {
 
   if (modo === 'exito') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <div className="w-20 h-20 rounded-full bg-[#00ac46]/10 flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4 animate-fadeUp">
+        <div className="w-20 h-20 rounded-full bg-[#00ac46]/10 flex items-center justify-center animate-popIn">
           <span className="material-symbols-outlined text-[#006e2a] text-[40px]">check_circle</span>
         </div>
         <h2 className="text-[22px] font-bold">¡Pago realizado!</h2>

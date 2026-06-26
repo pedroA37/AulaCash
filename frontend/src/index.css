@@ -55,7 +55,7 @@
 
 /* ── Keyframes ─────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -65,12 +65,26 @@
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.94); }
+  from { opacity: 0; transform: scale(0.96); }
   to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Rebote elástico — para íconos de éxito y confirmación */
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.55); }
+  65%  { opacity: 1; transform: scale(1.08); }
+  82%  { transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Entrada de tarjetas desde abajo */
+@keyframes slideUpCard {
+  from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -82,10 +96,12 @@
 }
 
 /* ── Utilities ──────────────────────────────── */
-.animate-fadeUp   { animation: fadeUp  0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.animate-fadeIn   { animation: fadeIn  0.22s ease both; }
-.animate-scaleIn  { animation: scaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.animate-slideDown { animation: slideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fadeUp    { animation: fadeUp      0.3s  cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-fadeIn    { animation: fadeIn      0.2s  ease both; }
+.animate-scaleIn   { animation: scaleIn     0.25s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-slideDown { animation: slideDown   0.22s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-popIn     { animation: popIn       0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform, opacity; }
+.animate-slideUp   { animation: slideUpCard 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
 
 .s-spin  { animation: s-rotate 1.4s linear infinite; transform-origin: center; }
 .s-arc   { animation: s-dash   1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }

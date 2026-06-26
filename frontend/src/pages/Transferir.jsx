@@ -109,7 +109,7 @@ export default function Transferir() {
 
       {/* ── PASO 1: elegir destinatario ── */}
       {mercadoOk && paso === 1 && (
-        <div className="space-y-5">
+        <div className="space-y-5 animate-fadeUp">
           <p className="text-[14px] text-[#5f5e5e]">
             Participantes de <span className="font-semibold text-[#1a1c1c]">{mercadoActivo.nombre}</span>
           </p>
@@ -160,7 +160,7 @@ export default function Transferir() {
 
       {/* ── PASO 2: ingresar monto ── */}
       {mercadoOk && paso === 2 && destinatario && (
-        <form onSubmit={confirmarTransferencia} className="space-y-5">
+        <form onSubmit={confirmarTransferencia} className="space-y-5 animate-fadeUp">
           <div className="bg-white rounded-2xl p-4 elevation-l1 flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-[#009ee3] flex items-center justify-center text-white font-bold text-[18px]">
               {destinatario.nombre[0]}{destinatario.apellido[0]}
@@ -227,8 +227,8 @@ export default function Transferir() {
 
       {/* ── PASO 3: éxito ── */}
       {mercadoOk && paso === 3 && (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-[#00ac46]/10 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4 animate-fadeUp">
+          <div className="w-20 h-20 rounded-full bg-[#00ac46]/10 flex items-center justify-center animate-popIn">
             <span className="material-symbols-outlined text-[#006e2a] text-[40px]">check_circle</span>
           </div>
           <h2 className="text-[22px] font-bold text-[#1a1c1c]">¡Transferencia exitosa!</h2>

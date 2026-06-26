@@ -286,7 +286,7 @@ export default function Dashboard() {
             key={label}
             onClick={() => navigate(route ?? `/mercados/${mercadoActivo?.id}`, { state })}
             disabled={!hayMercadoAbierto}
-            className="flex flex-col items-center justify-center gap-2.5 py-5 text-white rounded-2xl active:scale-95 transition-transform elevation-l1 disabled:opacity-30 disabled:pointer-events-none"
+            className="flex flex-col items-center justify-center gap-2.5 py-5 text-white rounded-2xl active:scale-95 transition-transform duration-[120ms] ease-out elevation-l1 disabled:opacity-30 disabled:pointer-events-none"
             style={{ background: grad }}
           >
             <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">

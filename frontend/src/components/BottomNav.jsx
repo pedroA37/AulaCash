@@ -32,7 +32,7 @@ export default function BottomNav() {
             <NavLink
               key={to}
               to={to}
-              className="relative flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-transform duration-150 active:scale-90 min-w-[52px]"
+              className="relative flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-transform duration-[120ms] ease-out active:scale-90 min-w-[52px]"
             >
               {({ isActive }) => (
                 <>
