@@ -57,12 +57,12 @@ export default function Registro() {
       </div>
 
       {/* Tarjeta de formulario */}
-      <div className="flex-1 bg-[#f4f6f8] rounded-t-3xl px-5 pt-7 pb-10 animate-slideDown">
+      <div className="bg-[#f4f6f8] rounded-t-3xl px-5 pt-7 pb-10">
         {/* Selector de rol */}
         <div className="flex bg-white rounded-2xl p-1 mb-5 elevation-l1">
           {[
             { value: 'user',  label: 'Alumno',  icon: 'school' },
-            { value: 'admin', label: 'Docente', icon: 'person_apron' },
+            { value: 'admin', label: 'Docente', icon: 'admin_panel_settings' },
           ].map(({ value, label, icon }) => (
             <button
               key={value}

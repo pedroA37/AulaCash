@@ -50,7 +50,7 @@ export default function Login() {
       </div>
 
       {/* Tarjeta de formulario */}
-      <div className="flex-1 bg-[#f4f6f8] rounded-t-3xl px-5 pt-8 pb-10 animate-slideDown">
+      <div className="bg-[#f4f6f8] rounded-t-3xl px-5 pt-8 pb-10">
         <h2 className="text-[22px] font-bold text-[#1a1c1c] mb-6">Iniciar sesión</h2>
 
         {error && (
