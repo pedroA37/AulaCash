@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [cargandoMercado, setCargandoMercado] = useState(false);
 
   const hayAbierto = mercadoActivo?.estado === 'abierto';
+  const esAdmin    = mercadoActivo?.admin_id === usuario?.id;
 
   // Propios no cerrados + ajenos abiertos
   const mercadosSeleccionables = mercados.filter((m) =>
@@ -178,6 +179,17 @@ export default function Dashboard() {
           </button>
         ))}
       </div>
+
+      {/* ── Gestionar mercado (solo admin del mercado activo) ── */}
+      {esAdmin && mercadoActivo && (
+        <button
+          onClick={() => navigate(`/mercados/${mercadoActivo.id}`)}
+          className="w-full mb-5 h-11 bg-white rounded-2xl elevation-l1 flex items-center justify-center gap-2 text-[#006492] font-bold text-[14px] active:scale-[0.98] transition-transform"
+        >
+          <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+          Gestionar mercado
+        </button>
+      )}
 
       {/* ── Últimos movimientos ── */}
       <div className={`transition-opacity duration-200 ${hayAbierto ? 'opacity-100' : 'opacity-40'}`}>
