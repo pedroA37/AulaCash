@@ -17,30 +17,42 @@ const TIPO_LABELS = {
   devolucion: 'Devolución',
 };
 
-function SelectorMercado({ mercados, mercadoActivo, seleccionarMercado }) {
-  const abiertos = mercados.filter((m) => m.estado === 'abierto');
+function SelectorMercado({ mercados, mercadoActivo, seleccionarMercado, usuarioId }) {
+  const seleccionables = mercados.filter((m) =>
+    m.admin_id === usuarioId ? m.estado !== 'cerrado' : m.estado === 'abierto'
+  );
   return (
     <div className="bg-white rounded-2xl p-4 elevation-l1 mb-4">
-      <p className="text-[12px] font-semibold text-[#6e7881] uppercase tracking-wider mb-2 flex items-center gap-1">
+      <p className="text-[11px] font-bold text-[#8a9aa6] uppercase tracking-wider mb-2 flex items-center gap-1">
         <span className="material-symbols-outlined text-[14px]">storefront</span>
-        Mercado
+        Mercado activo
       </p>
-      {abiertos.length === 0 ? (
-        <p className="text-[14px] text-[#5f5e5e]">No tenés mercados abiertos en este momento</p>
+      {seleccionables.length === 0 ? (
+        <div className="flex items-center gap-2 py-0.5">
+          <span className="material-symbols-outlined text-[#bec8d2] text-[20px]">storefront</span>
+          <p className="text-[14px] text-[#8a9aa6]">No tenés mercados disponibles</p>
+        </div>
       ) : (
-        <select
-          value={mercadoActivo?.id || ''}
-          onChange={(e) => {
-            const m = abiertos.find((x) => String(x.id) === e.target.value);
-            seleccionarMercado(m || null);
-          }}
-          className="w-full h-12 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[15px] text-[#1a1c1c]"
-        >
-          <option value="">Seleccionar mercado...</option>
-          {abiertos.map((m) => (
-            <option key={m.id} value={m.id}>{m.nombre} — {m.moneda_acronimo}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={mercadoActivo ? String(mercadoActivo.id) : ''}
+            onChange={(e) => {
+              const m = seleccionables.find((x) => String(x.id) === e.target.value);
+              seleccionarMercado(m || null);
+            }}
+            className="w-full h-11 px-4 pr-10 bg-[#f4f6f8] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[15px] font-semibold text-[#1a1c1c] appearance-none"
+          >
+            <option value="">Seleccioná un mercado</option>
+            {seleccionables.map((m) => (
+              <option key={m.id} value={String(m.id)}>
+                {m.nombre}{m.admin_id === usuarioId ? ' (tuyo)' : ''}
+              </option>
+            ))}
+          </select>
+          <span className="material-symbols-outlined text-[#8a9aa6] text-[20px] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            expand_more
+          </span>
+        </div>
       )}
     </div>
   );
@@ -72,7 +84,7 @@ export default function Historial() {
 
   return (
     <Layout titulo="Historial">
-      <SelectorMercado mercados={mercados} mercadoActivo={mercadoActivo} seleccionarMercado={seleccionarMercado} />
+      <SelectorMercado mercados={mercados} mercadoActivo={mercadoActivo} seleccionarMercado={seleccionarMercado} usuarioId={usuario?.id} />
 
       {!mercadoActivo ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] text-center gap-3">
