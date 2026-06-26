@@ -203,16 +203,15 @@ async function cerrarMercado(req, res) {
       totalDevuelto += parseFloat(p.saldo);
     }
 
-    if (totalDevuelto > 0) {
-      await client.query(
-        'UPDATE mercado_usuarios SET saldo = saldo + $1 WHERE mercado_id = $2 AND usuario_id = $3',
-        [totalDevuelto, id, m.admin_id]
-      );
-    }
+    // Zerar saldo del admin en el mercado (el dinero virtual queda anulado al cierre)
+    await client.query(
+      'UPDATE mercado_usuarios SET saldo = 0 WHERE mercado_id = $1 AND usuario_id = $2',
+      [id, m.admin_id]
+    );
 
     await client.query(`UPDATE mercados SET estado = 'cerrado' WHERE id = $1`, [id]);
     await client.query('COMMIT');
-    res.json({ mensaje: 'Mercado cerrado correctamente', total_devuelto: totalDevuelto });
+    res.json({ mensaje: 'Mercado cerrado correctamente', total_cobrado: totalDevuelto });
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
@@ -282,6 +281,7 @@ async function getSumasSaldos(req, res) {
      FROM mercado_usuarios mu
      JOIN usuarios u ON u.id = mu.usuario_id
      WHERE mu.mercado_id = $1
+       AND mu.usuario_id != (SELECT admin_id FROM mercados WHERE id = $1)
      ORDER BY mu.saldo DESC`,
     [id]
   );
@@ -327,6 +327,15 @@ async function eliminarMercado(req, res) {
   } finally {
     client.release();
   }
+}
+
+async function listarProductos(req, res) {
+  const { id } = req.params;
+  const { rows } = await pool.query(
+    'SELECT * FROM mercado_productos WHERE mercado_id = $1 AND activo = true ORDER BY created_at DESC',
+    [id]
+  );
+  res.json(rows);
 }
 
 async function crearProducto(req, res) {
@@ -385,5 +394,5 @@ module.exports = {
   abrirMercado, cerrarMercado,
   agregarPseudoAdmin, removerPseudoAdmin,
   getSumasSaldos,
-  crearProducto, actualizarProducto, eliminarProducto,
+  listarProductos, crearProducto, actualizarProducto, eliminarProducto,
 };

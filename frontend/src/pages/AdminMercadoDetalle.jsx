@@ -143,7 +143,7 @@ export default function AdminMercadoDetalle() {
 
   async function cerrarMercado() {
     setConfirmar({
-      texto: 'Se devolverán todos los saldos a los participantes. Esta acción no se puede deshacer.',
+      texto: 'El saldo de todos los participantes será debitado y el dinero en circulación quedará anulado. Esta acción no se puede deshacer.',
       accion: async () => {
         setAccionCargando(true);
         try {
@@ -151,7 +151,7 @@ export default function AdminMercadoDetalle() {
           const cerrado = { ...mercado, estado: 'cerrado' };
           setMercado(cerrado);
           actualizarMercadoActivo(cerrado);
-          showMsg(`Mercado cerrado. Total devuelto: ${fmt(data.total_devuelto)}`);
+          showMsg(`Mercado cerrado. Total cobrado: ${fmt(data.total_cobrado)} ${mercado.moneda_acronimo}`);
           refrescarMercados();
         } catch (err) { showErr(err.response?.data?.error || 'Error'); }
         finally { setAccionCargando(false); }

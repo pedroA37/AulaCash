@@ -16,6 +16,7 @@ router.post('/:id/pseudo-admins', requireMercadoAdmin, c.agregarPseudoAdmin);
 router.delete('/:id/pseudo-admins/:uid', requireMercadoAdmin, c.removerPseudoAdmin);
 router.get('/:id/sumas-saldos', requireMercadoAdmin, c.getSumasSaldos);
 
+router.get('/:id/productos', requireMercadoAdmin, c.listarProductos);
 router.post('/:id/productos', requireMercadoAdmin, c.crearProducto);
 router.patch('/:id/productos/:pid', requireMercadoAdmin, c.actualizarProducto);
 router.delete('/:id/productos/:pid', requireMercadoAdmin, c.eliminarProducto);

@@ -27,71 +27,82 @@ export default function Login() {
     }
   }
 
+  const inputClass = "w-full mt-1 h-12 px-4 bg-[#f4f6f8] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px] text-[#1a1c1c] transition-shadow";
+  const labelClass = "text-[11px] font-bold text-[#8a9aa6] uppercase tracking-wider";
+
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-5 bg-[#f9f9f9]">
-      <div className="w-full max-w-sm">
-        {/* Logo / Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#009ee3] flex items-center justify-center mx-auto mb-4 elevation-l2">
-            <span className="material-symbols-outlined text-white text-[32px]">account_balance_wallet</span>
+    <div className="min-h-dvh flex flex-col" style={{ background: 'linear-gradient(170deg, #003f61 0%, #006492 42%, #f4f6f8 100%)' }}>
+      {/* Hero */}
+      <div className="flex flex-col items-center pt-14 pb-10 px-5 animate-fadeUp">
+        <div
+          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5"
+          style={{ boxShadow: '0 12px 40px rgba(0, 100, 146, 0.4)' }}
+        >
+          <span
+            className="material-symbols-outlined text-[#006492] text-[32px]"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            account_balance_wallet
+          </span>
+        </div>
+        <h1 className="text-[30px] font-bold text-white tracking-tight">AulaCash</h1>
+        <p className="text-[13px] text-white/60 mt-1">Simulación educativa · no dinero real</p>
+      </div>
+
+      {/* Tarjeta de formulario */}
+      <div className="flex-1 bg-[#f4f6f8] rounded-t-3xl px-5 pt-8 pb-10 animate-slideDown">
+        <h2 className="text-[22px] font-bold text-[#1a1c1c] mb-6">Iniciar sesión</h2>
+
+        {error && (
+          <div className="bg-[#ffdad6] text-[#93000a] rounded-2xl px-4 py-3 text-[14px] mb-5 font-medium">
+            {error}
           </div>
-          <h1 className="text-[28px] font-bold text-[#1a1c1c] tracking-tight">AulaCash</h1>
-          <p className="text-[14px] text-[#5f5e5e] mt-1">Simulación educativa — no dinero real</p>
-        </div>
+        )}
 
-        <div className="bg-white rounded-2xl p-6 elevation-l1">
-          <h2 className="text-[20px] font-semibold text-[#1a1c1c] mb-6">Iniciar sesión</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={labelClass}>Email</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className={inputClass}
+              placeholder="tu@email.com"
+              required
+            />
+          </div>
 
-          {error && (
-            <div className="bg-[#ffdad6] text-[#93000a] rounded-xl px-4 py-3 text-[14px] mb-4">
-              {error}
-            </div>
-          )}
+          <div>
+            <label className={labelClass}>Contraseña</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className={inputClass}
+              placeholder="••••••••"
+              required
+            />
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-[12px] font-semibold text-[#6e7881] uppercase tracking-wider">Email</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full mt-1 h-12 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px] text-[#1a1c1c]"
-                placeholder="tu@email.com"
-                required
-              />
-            </div>
+          <div className="text-right pt-1">
+            <Link to="/forgot-password" className="text-[13px] text-[#006492] font-semibold">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
-            <div>
-              <label className="text-[12px] font-semibold text-[#6e7881] uppercase tracking-wider">Contraseña</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full mt-1 h-12 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px] text-[#1a1c1c]"
-                placeholder="••••••••"
-                required
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={cargando}
+            className="w-full h-14 text-white font-bold text-[16px] rounded-2xl active:scale-[0.98] transition-transform disabled:opacity-60 elevation-l1"
+            style={{ background: cargando ? '#8ab9d6' : 'linear-gradient(135deg, #006492 0%, #009ee3 100%)' }}
+          >
+            {cargando ? 'Ingresando...' : 'Ingresar'}
+          </button>
+        </form>
 
-            <div className="text-right">
-              <Link to="/forgot-password" className="text-[13px] text-[#006492] font-semibold">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
-              disabled={cargando}
-              className="w-full h-14 bg-[#009ee3] text-white font-bold text-[16px] rounded-full shadow-lg active:scale-[0.98] transition-all duration-200 disabled:opacity-60"
-            >
-              {cargando ? 'Ingresando...' : 'Ingresar'}
-            </button>
-          </form>
-        </div>
-
-        <p className="text-center text-[14px] text-[#5f5e5e] mt-6">
+        <p className="text-center text-[14px] text-[#8a9aa6] mt-8">
           ¿No tenés cuenta?{' '}
-          <Link to="/registro" className="text-[#006492] font-semibold">Registrarse</Link>
+          <Link to="/registro" className="text-[#006492] font-bold">Registrarse</Link>
         </p>
       </div>
     </div>

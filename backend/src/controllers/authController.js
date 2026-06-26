@@ -21,8 +21,8 @@ async function registro(req, res) {
     return res.status(400).json({ errores: errores.array() });
   }
 
-  const { dni, email, password, nombre, apellido } = req.body;
-  const rolFinal = 'user';
+  const { dni, email, password, nombre, apellido, rol } = req.body;
+  const rolFinal = rol === 'admin' ? 'admin' : 'user';
 
   const { rowCount: dniExiste } = await pool.query(
     'SELECT 1 FROM usuarios WHERE dni = $1', [dni]
