@@ -122,7 +122,6 @@ export default function Transferir() {
               onChange={(e) => setBusqueda(e.target.value)}
               className="w-full h-14 pl-12 pr-4 bg-white rounded-xl elevation-l1 outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px]"
               placeholder="Buscar por nombre o alias..."
-              autoFocus
             />
           </div>
 
