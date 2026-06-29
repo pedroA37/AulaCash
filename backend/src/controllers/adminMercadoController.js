@@ -332,7 +332,11 @@ async function eliminarMercado(req, res) {
 async function listarProductos(req, res) {
   const { id } = req.params;
   const { rows } = await pool.query(
-    'SELECT * FROM mercado_productos WHERE mercado_id = $1 AND activo = true ORDER BY created_at DESC',
+    `SELECT p.*, u.nombre AS vendedor_nombre, u.apellido AS vendedor_apellido
+     FROM mercado_productos p
+     LEFT JOIN usuarios u ON u.id = p.vendedor_id
+     WHERE p.mercado_id = $1 AND p.activo = true
+     ORDER BY p.created_at DESC`,
     [id]
   );
   res.json(rows);
@@ -346,9 +350,9 @@ async function crearProducto(req, res) {
   if (isNaN(precioNum) || precioNum <= 0) return res.status(400).json({ error: 'Precio inválido' });
 
   const { rows } = await pool.query(
-    `INSERT INTO mercado_productos (mercado_id, nombre, descripcion, precio, imagen_url, stock)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [id, nombre.trim(), descripcion || null, precioNum, imagen_url || null, stock != null ? parseInt(stock) : null]
+    `INSERT INTO mercado_productos (mercado_id, nombre, descripcion, precio, imagen_url, stock, vendedor_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [id, nombre.trim(), descripcion || null, precioNum, imagen_url || null, stock != null ? parseInt(stock) : null, req.user.id]
   );
   res.status(201).json(rows[0]);
 }

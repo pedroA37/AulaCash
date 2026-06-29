@@ -18,6 +18,7 @@ import MercadoDetalle from './pages/MercadoDetalle';
 import UnirseAlMercado from './pages/UnirseAlMercado';
 import AdminMercadoDetalle from './pages/AdminMercadoDetalle';
 import PseudoAdminMercado from './pages/PseudoAdminMercado';
+import ProductoMercadoDetalle from './pages/ProductoMercadoDetalle';
 import Spinner from './components/Spinner';
 
 function RutaMercadoDetalle() {
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/mercados/unirse" element={<RutaPrivada><UnirseAlMercado /></RutaPrivada>} />
           <Route path="/mercados/unirse/:codigo" element={<RutaPrivada><UnirseAlMercado /></RutaPrivada>} />
           <Route path="/mercados/:id" element={<RutaPrivada><RutaMercadoDetalle /></RutaPrivada>} />
+          <Route path="/mercados/:id/productos/:pid" element={<RutaPrivada><ProductoMercadoDetalle /></RutaPrivada>} />
 
           <Route path="/admin" element={<Navigate to="/mercados" replace />} />
           <Route path="/admin/mercados" element={<Navigate to="/mercados" replace />} />
