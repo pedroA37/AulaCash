@@ -86,13 +86,15 @@ async function forgotPassword(req, res) {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
-  const { rows } = await pool.query('SELECT id FROM usuarios WHERE email = $1', [email]);
+  const { rows } = await pool.query(
+    'SELECT id, nombre, apellido FROM usuarios WHERE email = $1', [email]
+  );
   // Respuesta genérica para no filtrar si el email existe
   if (rows.length === 0) {
     return res.json({ mensaje: 'Si el email existe, recibirás un enlace de recuperación' });
   }
 
-  const usuarioId = rows[0].id;
+  const { id: usuarioId, nombre, apellido } = rows[0];
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
   const { rows: tokenRows } = await pool.query(
@@ -104,14 +106,12 @@ async function forgotPassword(req, res) {
   const token = tokenRows[0].token;
   const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_xxxxxxxxxxxxxxxx') {
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'Recuperar contraseña — AulaCash',
-      html: `<p>Hacé clic en el siguiente enlace para restablecer tu contraseña. Expira en 1 hora.</p>
-             <a href="${link}">${link}</a>`,
-    });
+  if (process.env.N8N_FORGOT_PASSWORD_WEBHOOK) {
+    fetch(process.env.N8N_FORGOT_PASSWORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nombre, apellido, link }),
+    }).catch(() => {});
   }
 
   res.json({ mensaje: 'Si el email existe, recibirás un enlace de recuperación' });
@@ -143,4 +143,36 @@ async function resetPassword(req, res) {
   res.json({ mensaje: 'Contraseña actualizada correctamente' });
 }
 
-module.exports = { registro, login, forgotPassword, resetPassword };
+async function cambiarPassword(req, res) {
+  const { passwordActual, nuevaPassword } = req.body;
+  if (!passwordActual || !nuevaPassword) {
+    return res.status(400).json({ error: 'Contraseña actual y nueva requeridas' });
+  }
+  if (nuevaPassword.length < 8) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres' });
+  }
+
+  const { rows } = await pool.query('SELECT * FROM usuarios WHERE id = $1', [req.user.id]);
+  if (rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  const usuario = rows[0];
+  const passwordOk = await bcrypt.compare(passwordActual, usuario.password_hash);
+  if (!passwordOk) {
+    return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+  }
+
+  const hash = await bcrypt.hash(nuevaPassword, 12);
+  await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, usuario.id]);
+
+  if (process.env.N8N_CAMBIO_PASSWORD_WEBHOOK) {
+    fetch(process.env.N8N_CAMBIO_PASSWORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: usuario.email, nombre: usuario.nombre, apellido: usuario.apellido }),
+    }).catch(() => {});
+  }
+
+  res.json({ mensaje: 'Contraseña actualizada correctamente' });
+}
+
+module.exports = { registro, login, forgotPassword, resetPassword, cambiarPassword };

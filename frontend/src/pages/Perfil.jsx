@@ -23,6 +23,18 @@ export default function Perfil() {
   const [guardandoEmail, setGuardandoEmail] = useState(false);
   const [errorEmail, setErrorEmail] = useState('');
 
+  // Cambio de contraseña
+  const [editandoPassword, setEditandoPassword] = useState(false);
+  const [passwordActual, setPasswordActual] = useState('');
+  const [nuevaPassword, setNuevaPassword] = useState('');
+  const [confirmarPassword, setConfirmarPassword] = useState('');
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
+  const [errorPassword, setErrorPassword] = useState('');
+  const [exitoPassword, setExitoPassword] = useState(false);
+  const [mostrarActual, setMostrarActual] = useState(false);
+  const [mostrarNueva, setMostrarNueva] = useState(false);
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
+
   function copiar(texto, tipo) {
     navigator.clipboard.writeText(texto).then(() => {
       setCopiado(tipo);
@@ -75,6 +87,45 @@ export default function Perfil() {
       setErrorEmail(err.response?.data?.error || 'Error al guardar');
     } finally {
       setGuardandoEmail(false);
+    }
+  }
+
+  function abrirEditPassword() {
+    setPasswordActual('');
+    setNuevaPassword('');
+    setConfirmarPassword('');
+    setErrorPassword('');
+    setExitoPassword(false);
+    setMostrarActual(false);
+    setMostrarNueva(false);
+    setMostrarConfirmar(false);
+    setEditandoPassword(true);
+  }
+
+  async function guardarPassword() {
+    setErrorPassword('');
+    if (!passwordActual || !nuevaPassword || !confirmarPassword) {
+      setErrorPassword('Completá todos los campos');
+      return;
+    }
+    if (nuevaPassword.length < 8) {
+      setErrorPassword('La nueva contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (nuevaPassword !== confirmarPassword) {
+      setErrorPassword('Las contraseñas nuevas no coinciden');
+      return;
+    }
+    setGuardandoPassword(true);
+    try {
+      await api.patch('/cuenta/password', { passwordActual, nuevaPassword });
+      setExitoPassword(true);
+      setEditandoPassword(false);
+      setTimeout(() => setExitoPassword(false), 4000);
+    } catch (err) {
+      setErrorPassword(err.response?.data?.error || 'Error al cambiar la contraseña');
+    } finally {
+      setGuardandoPassword(false);
     }
   }
 
@@ -221,14 +272,119 @@ export default function Perfil() {
         </div>
 
         {/* Cambiar contraseña */}
-        <button
-          onClick={() => navigate('/forgot-password')}
-          className="flex items-center gap-3 w-full px-4 py-4 border-t border-[#eeeeee] active:bg-[#f3f3f3] transition-colors"
-        >
-          <span className="material-symbols-outlined text-[#5f5e5e]">lock</span>
-          <span className="text-[15px] font-semibold text-[#1a1c1c]">Cambiar contraseña</span>
-          <span className="material-symbols-outlined text-[#6e7881] ml-auto">chevron_right</span>
-        </button>
+        <div className="px-4 py-3 border-t border-[#eeeeee]">
+          {exitoPassword && !editandoPassword && (
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-[#e8f5e9] rounded-xl">
+              <span className="material-symbols-outlined text-[#2e7d32] text-[18px]">check_circle</span>
+              <p className="text-[13px] text-[#1b5e20] font-semibold">Contraseña actualizada correctamente</p>
+            </div>
+          )}
+          {editandoPassword ? (
+            <div className="space-y-3">
+              <p className="text-[12px] text-[#5f5e5e] font-semibold uppercase tracking-wide mb-2">Cambiar contraseña</p>
+
+              {/* Contraseña actual */}
+              <div>
+                <p className="text-[12px] text-[#5f5e5e] mb-1">Contraseña actual</p>
+                <div className="relative">
+                  <input
+                    type={mostrarActual ? 'text' : 'password'}
+                    value={passwordActual}
+                    onChange={(e) => setPasswordActual(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full h-10 pl-3 pr-10 bg-[#f3f3f3] rounded-xl border-2 border-[#009ee3] outline-none text-[15px] text-[#1a1c1c]"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarActual((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e7881]"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {mostrarActual ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Nueva contraseña */}
+              <div>
+                <p className="text-[12px] text-[#5f5e5e] mb-1">Nueva contraseña</p>
+                <div className="relative">
+                  <input
+                    type={mostrarNueva ? 'text' : 'password'}
+                    value={nuevaPassword}
+                    onChange={(e) => setNuevaPassword(e.target.value)}
+                    placeholder="Mínimo 8 caracteres"
+                    className="w-full h-10 pl-3 pr-10 bg-[#f3f3f3] rounded-xl border-2 border-[#009ee3] outline-none text-[15px] text-[#1a1c1c]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarNueva((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e7881]"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {mostrarNueva ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirmar contraseña */}
+              <div>
+                <p className="text-[12px] text-[#5f5e5e] mb-1">Confirmar nueva contraseña</p>
+                <div className="relative">
+                  <input
+                    type={mostrarConfirmar ? 'text' : 'password'}
+                    value={confirmarPassword}
+                    onChange={(e) => setConfirmarPassword(e.target.value)}
+                    placeholder="Repetí la nueva contraseña"
+                    onKeyDown={(e) => { if (e.key === 'Enter') guardarPassword(); if (e.key === 'Escape') setEditandoPassword(false); }}
+                    className="w-full h-10 pl-3 pr-10 bg-[#f3f3f3] rounded-xl border-2 border-[#009ee3] outline-none text-[15px] text-[#1a1c1c]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarConfirmar((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e7881]"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {mostrarConfirmar ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {errorPassword && (
+                <p className="text-[12px] text-[#ba1a1a]">{errorPassword}</p>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={guardarPassword}
+                  disabled={guardandoPassword}
+                  className="flex-1 h-9 bg-[#009ee3] text-white text-[13px] font-semibold rounded-lg disabled:opacity-60"
+                >
+                  {guardandoPassword ? 'Guardando...' : 'Guardar'}
+                </button>
+                <button
+                  onClick={() => setEditandoPassword(false)}
+                  className="flex-1 h-9 bg-[#eeeeee] text-[#5f5e5e] text-[13px] font-semibold rounded-lg"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={abrirEditPassword}
+              className="flex items-center gap-3 w-full active:opacity-60 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[#5f5e5e]">lock</span>
+              <span className="text-[15px] font-semibold text-[#1a1c1c]">Cambiar contraseña</span>
+              <span className="material-symbols-outlined text-[#6e7881] ml-auto">chevron_right</span>
+            </button>
+          )}
+        </div>
       </div>
 
 
