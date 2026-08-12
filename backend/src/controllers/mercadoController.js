@@ -94,8 +94,8 @@ async function transferirEnMercado(req, res) {
   const { destino_usuario_id, monto, descripcion } = req.body;
   if (!destino_usuario_id || !monto) return res.status(400).json({ error: 'destino_usuario_id y monto son requeridos' });
 
-  const montoNum = parseFloat(monto);
-  if (isNaN(montoNum) || montoNum <= 0) return res.status(400).json({ error: 'Monto inválido' });
+  const montoNum = Math.round(parseFloat(monto) * 100) / 100;
+  if (isNaN(montoNum) || montoNum < 0.01) return res.status(400).json({ error: 'El monto mínimo es $0.01' });
   if (parseInt(destino_usuario_id) === req.user.id) return res.status(400).json({ error: 'No podés transferirte a vos mismo' });
 
   const client = await pool.connect();

@@ -4,9 +4,9 @@ const QR_EXPIRACION_MINUTOS = 30;
 
 async function generarQR(req, res) {
   const { monto, mercado_id } = req.body;
-  const montoNum = parseFloat(monto);
-  if (!monto || isNaN(montoNum) || montoNum <= 0) {
-    return res.status(400).json({ error: 'Monto inválido' });
+  const montoNum = Math.round(parseFloat(monto) * 100) / 100;
+  if (!monto || isNaN(montoNum) || montoNum < 0.01) {
+    return res.status(400).json({ error: 'El monto mínimo es $0.01' });
   }
   if (!mercado_id) {
     return res.status(400).json({ error: 'mercado_id es requerido' });

@@ -32,8 +32,8 @@ async function cargarSaldo(req, res) {
   const { usuario_id, monto, descripcion } = req.body;
   if (!usuario_id || !monto) return res.status(400).json({ error: 'usuario_id y monto son requeridos' });
 
-  const montoNum = parseFloat(monto);
-  if (isNaN(montoNum) || montoNum <= 0) return res.status(400).json({ error: 'Monto inválido' });
+  const montoNum = Math.round(parseFloat(monto) * 100) / 100;
+  if (isNaN(montoNum) || montoNum < 0.01) return res.status(400).json({ error: 'El monto mínimo es $0.01' });
 
   const client = await pool.connect();
   try {
