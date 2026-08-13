@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useMercado } from '../context/MercadoContext';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import Spinner from '../components/Spinner';
 import api from '../services/api';
@@ -10,13 +11,21 @@ function fmt(n) {
   return Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2 });
 }
 
+function getCart(mercadoId) {
+  try { return JSON.parse(localStorage.getItem(`cart_mercado_${mercadoId}`)) || []; } catch { return []; }
+}
+function saveCart(mercadoId, cart) {
+  localStorage.setItem(`cart_mercado_${mercadoId}`, JSON.stringify(cart));
+}
+
 const inputClass = 'w-full mt-1 h-12 px-4 bg-[#f3f3f3] rounded-xl border-none outline-none focus:ring-2 focus:ring-[#009ee3] text-[16px]';
 const labelClass = 'text-[12px] font-semibold text-[#6e7881] uppercase tracking-wider';
 
 const TABS = [
   { id: 'resumen', icon: 'dashboard', label: 'Resumen' },
+  { id: 'comprar', icon: 'storefront', label: 'Comprar' },
   { id: 'usuarios', icon: 'group', label: 'Usuarios' },
-  { id: 'productos', icon: 'shopping_bag', label: 'Tienda' },
+  { id: 'productos', icon: 'shopping_bag', label: 'Gestionar' },
   { id: 'sumas', icon: 'account_balance', label: 'Sumas' },
   { id: 'config', icon: 'settings', label: 'Config' },
 ];
@@ -43,6 +52,7 @@ function resizarImagen(file, maxPx = 600) {
 export default function AdminMercadoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const { refrescarMercados, actualizarMercadoActivo } = useMercado();
   const fileInputRef = useRef(null);
   const [tab, setTab] = useState('resumen');
@@ -81,6 +91,15 @@ export default function AdminMercadoDetalle() {
   const [descCarga, setDescCarga] = useState('');
   const [cargandoSaldo, setCargandoSaldo] = useState(false);
 
+  // Comprar (carrito del admin en el mercado)
+  const [tiendaProductos, setTiendaProductos] = useState([]);
+  const [busquedaTienda, setBusquedaTienda] = useState('');
+  const [carrito, setCarrito] = useState(() => getCart(id));
+  const [showCart, setShowCart] = useState(false);
+  const [comprando, setComprando] = useState(false);
+  const [carritoOk, setCarritoOk] = useState(false);
+  const [carritoError, setCarritoError] = useState('');
+
   // Confirmación destructiva
   const [confirmar, setConfirmar] = useState(null); // { accion, texto }
 
@@ -116,10 +135,48 @@ export default function AdminMercadoDetalle() {
     if (tab === 'sumas') {
       api.get(`/admin/mercados/${id}/sumas-saldos`).then(({ data }) => setSumas(data)).catch(() => {});
     }
+    if (tab === 'comprar') {
+      api.get(`/mercados/${id}/productos`).then(({ data }) => setTiendaProductos(data)).catch(() => {});
+    }
   }, [tab, id]);
 
   function showMsg(msg) { setMensaje(msg); setTimeout(() => setMensaje(''), 4000); }
   function showErr(msg) { setError(msg); setTimeout(() => setError(''), 4000); }
+
+  // ── Carrito (compras del admin) ──
+  function syncCart(c) { setCarrito(c); saveCart(id, c); }
+  function agregarAlCarrito(prod) {
+    const cart = [...carrito];
+    const idx = cart.findIndex((i) => i.producto_id === prod.id);
+    if (idx >= 0) { cart[idx].cantidad += 1; }
+    else { cart.push({ producto_id: prod.id, cantidad: 1, nombre: prod.nombre, precio: parseFloat(prod.precio), imagen_url: prod.imagen_url }); }
+    syncCart(cart);
+  }
+  function cambiarCantidadCart(idx, delta) {
+    const cart = [...carrito];
+    cart[idx].cantidad = Math.max(1, cart[idx].cantidad + delta);
+    syncCart(cart);
+  }
+  function quitarDelCart(idx) { syncCart(carrito.filter((_, i) => i !== idx)); }
+
+  async function pagarCarrito() {
+    setComprando(true);
+    setCarritoError('');
+    try {
+      const items = carrito.map((i) => ({ producto_id: i.producto_id, cantidad: i.cantidad }));
+      await api.post(`/mercados/${id}/carrito`, { items });
+      setCarritoOk(true);
+      syncCart([]);
+      setShowCart(false);
+      cargar();
+      api.get(`/mercados/${id}/productos`).then(({ data }) => setTiendaProductos(data)).catch(() => {});
+      setTimeout(() => setCarritoOk(false), 3000);
+    } catch (err) {
+      setCarritoError(err.response?.data?.error || 'Error al procesar el pago');
+    } finally {
+      setComprando(false);
+    }
+  }
 
   function copiarCodigo() {
     navigator.clipboard.writeText(mercado.codigo).then(() => {
@@ -292,6 +349,14 @@ export default function AdminMercadoDetalle() {
   const esAbierto = mercado.estado === 'abierto';
   const esCerrado = mercado.estado === 'cerrado';
 
+  const totalCarrito = Math.round(carrito.reduce((s, i) => s + i.precio * i.cantidad, 0) * 100) / 100;
+  const cartCount = carrito.reduce((s, i) => s + i.cantidad, 0);
+  const miSaldoMercado = parseFloat(participantes.find((p) => p.usuario_id === usuario?.id)?.saldo ?? 0);
+  const prodsFiltrados = tiendaProductos.filter((p) =>
+    !busquedaTienda || p.nombre.toLowerCase().includes(busquedaTienda.toLowerCase()) ||
+    `${p.vendedor_nombre} ${p.vendedor_apellido}`.toLowerCase().includes(busquedaTienda.toLowerCase())
+  );
+
   return (
     <Layout titulo={mercado.nombre}>
       <div className="space-y-4">
@@ -370,6 +435,111 @@ export default function AdminMercadoDetalle() {
                 {accionCargando ? 'Cerrando...' : 'Cerrar mercado'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* ── COMPRAR ── */}
+        {tab === 'comprar' && (
+          <div className="space-y-3">
+            {carritoOk && (
+              <div className="bg-[#00ac46]/10 text-[#006e2a] rounded-xl px-4 py-3 text-[14px] font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                ¡Compra realizada con éxito!
+              </div>
+            )}
+
+            {/* Saldo disponible */}
+            <div className="bg-white rounded-2xl px-4 py-3 elevation-l1 flex items-center justify-between">
+              <span className="text-[13px] text-[#5f5e5e]">Tu saldo en el mercado</span>
+              <span className="font-bold text-[#006492] text-[16px]">{fmt(miSaldoMercado)} {mercado.moneda_acronimo}</span>
+            </div>
+
+            {/* Buscador */}
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#5f5e5e] text-[20px]">search</span>
+              <input
+                type="text"
+                placeholder="Buscar producto o vendedor..."
+                value={busquedaTienda}
+                onChange={(e) => setBusquedaTienda(e.target.value)}
+                className="w-full h-11 pl-10 pr-4 bg-white rounded-xl border border-[#eeeeee] text-[14px] outline-none focus:ring-2 focus:ring-[#009ee3]"
+              />
+            </div>
+
+            {/* Carrito flotante */}
+            {cartCount > 0 && (
+              <button
+                onClick={() => setShowCart(true)}
+                className="w-full h-12 bg-[#006492] text-white font-bold text-[14px] rounded-full flex items-center justify-center gap-2 elevation-l2 active:scale-[0.98] transition-all"
+              >
+                <span className="material-symbols-outlined text-[18px]">shopping_cart</span>
+                Ver carrito · {cartCount} {cartCount === 1 ? 'item' : 'items'} · {fmt(totalCarrito)} {mercado.moneda_acronimo}
+              </button>
+            )}
+
+            {prodsFiltrados.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center elevation-l1">
+                <span className="material-symbols-outlined text-[#bec8d2] text-[40px]">shopping_bag</span>
+                <p className="text-[14px] text-[#5f5e5e] mt-2">
+                  {busquedaTienda ? 'Sin resultados' : 'No hay productos disponibles aún'}
+                </p>
+              </div>
+            ) : prodsFiltrados.map((prod) => {
+              const enCart = carrito.find((i) => i.producto_id === prod.id);
+              const esPropio = prod.vendedor_id === usuario?.id;
+              return (
+                <div key={prod.id} className="bg-white rounded-2xl elevation-l1 overflow-hidden">
+                  <div className="flex items-start gap-3 p-4">
+                    {prod.imagen_url ? (
+                      <img src={prod.imagen_url} alt={prod.nombre} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-xl bg-[#f3f3f3] flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-[#bec8d2] text-[28px]">image</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-[#1a1c1c] text-[15px] leading-tight">{prod.nombre}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-[#5f5e5e] text-[13px]">person</span>
+                        <p className="text-[12px] text-[#5f5e5e]">
+                          {prod.vendedor_nombre} {prod.vendedor_apellido}
+                          {esPropio && <span className="text-[#009ee3] font-semibold"> (vos)</span>}
+                        </p>
+                      </div>
+                      {prod.descripcion && <p className="text-[12px] text-[#5f5e5e] mt-1 line-clamp-1">{prod.descripcion}</p>}
+                      <div className="flex items-center justify-between mt-2">
+                        <div>
+                          <span className="text-[18px] font-bold text-[#006492]">{fmt(prod.precio)}</span>
+                          <span className="text-[11px] text-[#5f5e5e] ml-1">{mercado.moneda_acronimo}</span>
+                        </div>
+                        {prod.stock !== null && (
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${prod.stock > 0 ? 'bg-[#d3f5e1] text-[#006e2a]' : 'bg-[#ffdad6] text-[#93000a]'}`}>
+                            {prod.stock > 0 ? `${prod.stock} disponibles` : 'Sin stock'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {!esPropio && !esCerrado && (prod.stock === null || prod.stock > 0) && (
+                    <div className="px-4 pb-3">
+                      <button
+                        onClick={() => agregarAlCarrito(prod)}
+                        disabled={miSaldoMercado < parseFloat(prod.precio) && !enCart}
+                        className="w-full h-9 bg-[#009ee3] text-white font-semibold text-[13px] rounded-xl disabled:opacity-40 active:scale-95 transition-all flex items-center justify-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">{enCart ? 'add' : 'add_shopping_cart'}</span>
+                        {enCart ? `En carrito (${enCart.cantidad})` : 'Agregar'}
+                      </button>
+                    </div>
+                  )}
+                  {esPropio && (
+                    <div className="px-4 pb-3">
+                      <p className="text-[12px] text-[#5f5e5e] text-center py-1">Es tu producto</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -719,6 +889,83 @@ export default function AdminMercadoDetalle() {
                 Confirmar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer carrito (compras del admin) */}
+      {showCart && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCart(false)} />
+          <div className="relative bg-white rounded-t-3xl p-5 space-y-4 max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[17px] font-bold text-[#1a1c1c] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Carrito ({cartCount} {cartCount === 1 ? 'item' : 'items'})
+              </h2>
+              <button onClick={() => setShowCart(false)} className="w-8 h-8 rounded-full bg-[#f3f3f3] flex items-center justify-center">
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {carrito.length === 0 ? (
+              <div className="py-8 text-center">
+                <span className="material-symbols-outlined text-[#bec8d2] text-[40px]">shopping_cart</span>
+                <p className="text-[14px] text-[#5f5e5e] mt-2">El carrito está vacío</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+                  {carrito.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 py-2 border-b border-[#eeeeee]">
+                      {item.imagen_url ? (
+                        <img src={item.imagen_url} alt={item.nombre} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-[#f3f3f3] flex items-center justify-center flex-shrink-0">
+                          <span className="material-symbols-outlined text-[#bec8d2] text-[20px]">image</span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-[#1a1c1c] truncate">{item.nombre}</p>
+                        <p className="text-[12px] text-[#5f5e5e]">{fmt(item.precio)} {mercado.moneda_acronimo} c/u</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button onClick={() => cambiarCantidadCart(idx, -1)} className="w-7 h-7 rounded-full bg-[#f3f3f3] flex items-center justify-center active:scale-90">
+                          <span className="material-symbols-outlined text-[16px]">remove</span>
+                        </button>
+                        <span className="text-[14px] font-bold text-[#1a1c1c] w-5 text-center">{item.cantidad}</span>
+                        <button onClick={() => cambiarCantidadCart(idx, 1)} className="w-7 h-7 rounded-full bg-[#f3f3f3] flex items-center justify-center active:scale-90">
+                          <span className="material-symbols-outlined text-[16px]">add</span>
+                        </button>
+                        <button onClick={() => quitarDelCart(idx)} className="w-7 h-7 rounded-full bg-[#ffdad6] flex items-center justify-center active:scale-90 ml-1">
+                          <span className="material-symbols-outlined text-[#ba1a1a] text-[16px]">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <div>
+                    <p className="text-[12px] text-[#5f5e5e]">Total</p>
+                    <p className="text-[22px] font-bold text-[#1a1c1c]">{fmt(totalCarrito)} <span className="text-[14px] text-[#5f5e5e]">{mercado.moneda_acronimo}</span></p>
+                    <p className={`text-[12px] font-semibold ${miSaldoMercado >= totalCarrito ? 'text-[#006e2a]' : 'text-[#ba1a1a]'}`}>
+                      Tu saldo: {fmt(miSaldoMercado)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={pagarCarrito}
+                    disabled={comprando || miSaldoMercado < totalCarrito}
+                    className="h-12 px-6 bg-[#009ee3] text-white font-bold text-[14px] rounded-full disabled:opacity-40 active:scale-[0.98] transition-all flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">payments</span>
+                    {comprando ? 'Pagando...' : 'Pagar'}
+                  </button>
+                </div>
+
+                {carritoError && <p className="text-[13px] text-[#ba1a1a] text-center">{carritoError}</p>}
+              </>
+            )}
           </div>
         </div>
       )}
