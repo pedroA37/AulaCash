@@ -167,7 +167,7 @@ export default function MercadoDetalle() {
     syncCart(cart);
   }
 
-  const totalCarrito = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const totalCarrito = Math.round(carrito.reduce((s, i) => s + i.precio * i.cantidad, 0) * 100) / 100;
   const cartCount = carrito.reduce((s, i) => s + i.cantidad, 0);
 
   async function pagarCarrito() {

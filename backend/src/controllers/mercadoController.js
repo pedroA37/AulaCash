@@ -413,7 +413,7 @@ async function comprarCarrito(req, res) {
         return res.status(400).json({ error: `No podés comprar tu propio producto: "${prod.nombre}"` });
       }
 
-      total += parseFloat(prod.precio) * cantidad;
+      total = Math.round((total + parseFloat(prod.precio) * cantidad) * 100) / 100;
       itemsProc.push({ prod, cantidad, vendedorId });
     }
 
@@ -443,7 +443,7 @@ async function comprarCarrito(req, res) {
     );
 
     for (const { prod, cantidad, vendedorId } of itemsProc) {
-      const subtotal = parseFloat(prod.precio) * cantidad;
+      const subtotal = Math.round(parseFloat(prod.precio) * cantidad * 100) / 100;
 
       await client.query(
         'UPDATE mercado_usuarios SET saldo = saldo + $1 WHERE mercado_id = $2 AND usuario_id = $3',

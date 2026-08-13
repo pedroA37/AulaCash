@@ -19,6 +19,14 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+      - key: NODE_ENV
+        value: production
 
   # ── LANDING ──────────────────────────────────────────────
   - type: web

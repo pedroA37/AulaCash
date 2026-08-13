@@ -127,7 +127,10 @@ async function resetPassword(req, res) {
   }
 
   const { rows } = await pool.query(
-    `SELECT * FROM password_resets WHERE token = $1 AND usado = false AND expires_at > now()`,
+    `SELECT pr.*, u.email, u.nombre, u.apellido
+     FROM password_resets pr
+     JOIN usuarios u ON u.id = pr.usuario_id
+     WHERE pr.token = $1 AND pr.usado = false AND pr.expires_at > now()`,
     [token]
   );
   if (rows.length === 0) {
@@ -139,6 +142,14 @@ async function resetPassword(req, res) {
 
   await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, reset.usuario_id]);
   await pool.query('UPDATE password_resets SET usado = true WHERE id = $1', [reset.id]);
+
+  if (process.env.N8N_CAMBIO_PASSWORD_WEBHOOK) {
+    fetch(process.env.N8N_CAMBIO_PASSWORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: reset.email, nombre: reset.nombre, apellido: reset.apellido }),
+    }).catch(() => {});
+  }
 
   res.json({ mensaje: 'Contraseña actualizada correctamente' });
 }
