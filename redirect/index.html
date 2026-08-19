@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AulaCash — Nos mudamos</title>
+  <title>AulaCash — Nueva dirección</title>
   <meta http-equiv="refresh" content="5;url=https://aula-cash-kappa.vercel.app" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,91 +13,114 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0f172a;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      color: #f1f5f9;
+      background: #f0f7ff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+      color: #1a2f4e;
     }
 
     .card {
-      text-align: center;
+      background: #ffffff;
+      border: 1px solid #d6e8f7;
+      border-radius: 16px;
       padding: 3rem 2.5rem;
       max-width: 420px;
       width: 90%;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0, 120, 212, 0.08);
     }
 
-    .icon {
-      font-size: 4rem;
-      margin-bottom: 1.5rem;
-      display: block;
-      animation: bounce 1.6s infinite;
+    .rocket-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.75rem;
     }
 
-    @keyframes bounce {
+    .rocket-wrap svg {
+      width: 56px;
+      height: 56px;
+      animation: lift 2.4s ease-in-out infinite;
+    }
+
+    @keyframes lift {
       0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-10px); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .wordmark {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #0078d4;
+      margin-bottom: 1rem;
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: 1.6rem;
       font-weight: 700;
-      margin-bottom: .75rem;
-      background: linear-gradient(135deg, #6366f1, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #1a2f4e;
+      margin-bottom: .6rem;
+      letter-spacing: -.01em;
     }
 
-    p {
-      color: #94a3b8;
-      font-size: 1rem;
-      line-height: 1.6;
+    .sub {
+      font-size: .95rem;
+      color: #5a7a9a;
+      line-height: 1.65;
       margin-bottom: 2rem;
     }
 
-    p strong {
-      color: #e2e8f0;
+    .sub strong {
+      color: #0078d4;
+      font-weight: 600;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e3f0fb;
+      margin-bottom: 2rem;
     }
 
     .btn {
       display: inline-block;
-      padding: .85rem 2.2rem;
-      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      padding: .75rem 2rem;
+      background: #0078d4;
       color: #fff;
-      font-size: 1rem;
+      font-size: .95rem;
       font-weight: 600;
-      border-radius: 12px;
+      border-radius: 8px;
       text-decoration: none;
-      transition: opacity .2s, transform .2s;
-      box-shadow: 0 4px 20px rgba(99,102,241,.4);
+      letter-spacing: .01em;
+      transition: background .18s, transform .18s;
     }
 
     .btn:hover {
-      opacity: .9;
-      transform: translateY(-2px);
+      background: #005fa3;
+      transform: translateY(-1px);
     }
 
     .countdown {
-      margin-top: 1.75rem;
-      font-size: .85rem;
-      color: #475569;
+      margin-top: 1.5rem;
+      font-size: .82rem;
+      color: #8baac4;
     }
 
     .countdown span {
-      color: #818cf8;
+      color: #0078d4;
       font-weight: 600;
     }
 
     .bar-wrap {
-      margin-top: .75rem;
-      height: 4px;
-      background: #1e293b;
+      margin-top: .6rem;
+      height: 3px;
+      background: #e3f0fb;
       border-radius: 99px;
       overflow: hidden;
     }
 
     .bar {
       height: 100%;
-      background: linear-gradient(90deg, #6366f1, #a78bfa);
+      background: #0078d4;
       border-radius: 99px;
       width: 100%;
       animation: shrink 5s linear forwards;
@@ -111,27 +134,51 @@
 </head>
 <body>
   <div class="card">
-    <span class="icon">🚀</span>
-    <h1>¡Nos mudamos!</h1>
-    <p>
-      AulaCash tiene una nueva dirección.<br />
-      Ahora vivimos en <strong>aula-cash-kappa.vercel.app</strong>
+    <div class="rocket-wrap">
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- body -->
+        <path d="M28 6C28 6 18 16 18 30h20C38 16 28 6 28 6Z" fill="#0078d4"/>
+        <!-- nose -->
+        <path d="M28 6C24 10 20 16 18 22h20C36 16 32 10 28 6Z" fill="#005fa3"/>
+        <!-- window -->
+        <circle cx="28" cy="24" r="4" fill="#ffffff" stroke="#d6e8f7" stroke-width="1.5"/>
+        <!-- fins left -->
+        <path d="M18 36 L10 44 L18 42 Z" fill="#0078d4"/>
+        <!-- fins right -->
+        <path d="M38 36 L46 44 L38 42 Z" fill="#0078d4"/>
+        <!-- exhaust -->
+        <path d="M22 38 Q24 44 28 48 Q32 44 34 38 Z" fill="#38b2e8" opacity=".7"/>
+        <path d="M25 38 Q27 43 28 46 Q29 43 31 38 Z" fill="#ffffff" opacity=".6"/>
+      </svg>
+    </div>
+
+    <p class="wordmark">AulaCash</p>
+    <h1>Nos mudamos</h1>
+    <p class="sub">
+      Encontranos en nuestra nueva dirección:<br />
+      <strong>aula-cash-kappa.vercel.app</strong>
     </p>
+
+    <div class="divider"></div>
+
     <a class="btn" href="https://aula-cash-kappa.vercel.app">Ir al nuevo sitio</a>
-    <p class="countdown">Redirigiendo automáticamente en <span id="t">5</span> segundos…</p>
+
+    <p class="countdown">Redirigiendo en <span id="t">5</span> segundos…</p>
     <div class="bar-wrap"><div class="bar"></div></div>
   </div>
 
   <script>
+    // Registra el SW killer para limpiar caché de la PWA anterior
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
     let s = 5;
     const el = document.getElementById('t');
     const iv = setInterval(() => {
       s--;
       el.textContent = s;
-      if (s <= 0) {
-        clearInterval(iv);
-        location.href = 'https://aula-cash-kappa.vercel.app';
-      }
+      if (s <= 0) { clearInterval(iv); location.href = 'https://aula-cash-kappa.vercel.app'; }
     }, 1000);
   </script>
 </body>
