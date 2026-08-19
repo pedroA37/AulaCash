@@ -9,6 +9,19 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+async function sendOne(sub, payloadStr) {
+  try {
+    await webpush.sendNotification(
+      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+      payloadStr
+    );
+  } catch (err) {
+    if (err.statusCode === 410) {
+      await pool.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [sub.endpoint]);
+    }
+  }
+}
+
 async function enviarPush(usuarioId, payload) {
   if (!process.env.VAPID_PUBLIC_KEY) return;
 
@@ -18,18 +31,7 @@ async function enviarPush(usuarioId, payload) {
   );
 
   const payloadStr = JSON.stringify(payload);
-  for (const sub of rows) {
-    try {
-      await webpush.sendNotification(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        payloadStr
-      );
-    } catch (err) {
-      if (err.statusCode === 410) {
-        await pool.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [sub.endpoint]);
-      }
-    }
-  }
+  await Promise.all(rows.map((sub) => sendOne(sub, payloadStr)));
 }
 
 async function enviarPushAMercado(mercadoId, payload) {
@@ -44,17 +46,9 @@ async function enviarPushAMercado(mercadoId, payload) {
   );
 
   const payloadStr = JSON.stringify(payload);
-  for (const sub of rows) {
-    try {
-      await webpush.sendNotification(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        payloadStr
-      );
-    } catch (err) {
-      if (err.statusCode === 410) {
-        await pool.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [sub.endpoint]);
-      }
-    }
+  const BATCH = 20;
+  for (let i = 0; i < rows.length; i += BATCH) {
+    await Promise.all(rows.slice(i, i + BATCH).map((sub) => sendOne(sub, payloadStr)));
   }
 }
 

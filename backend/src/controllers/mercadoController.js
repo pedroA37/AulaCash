@@ -442,34 +442,61 @@ async function comprarCarrito(req, res) {
       [total, id, req.user.id]
     );
 
+    // Acumular totales por vendedor y actualizar en un solo UPDATE por vendedor
+    const vendorAmounts = new Map();
     for (const { prod, cantidad, vendedorId } of itemsProc) {
       const subtotal = Math.round(parseFloat(prod.precio) * cantidad * 100) / 100;
+      vendorAmounts.set(vendedorId, (vendorAmounts.get(vendedorId) || 0) + subtotal);
+    }
+    const vendorIds = [...vendorAmounts.keys()];
+    const vendorSums = vendorIds.map((vid) => vendorAmounts.get(vid));
+    await client.query(
+      `UPDATE mercado_usuarios AS mu
+       SET saldo = saldo + v.monto
+       FROM (SELECT unnest($1::int[]) AS usuario_id, unnest($2::numeric[]) AS monto) AS v
+       WHERE mu.mercado_id = $3 AND mu.usuario_id = v.usuario_id`,
+      [vendorIds, vendorSums, id]
+    );
 
+    // Batch UPDATE de stock (solo productos con stock finito)
+    const stockItems = itemsProc.filter(({ prod }) => prod.stock !== null);
+    if (stockItems.length > 0) {
+      const prodIds  = stockItems.map(({ prod }) => prod.id);
+      const newStocks = stockItems.map(({ prod, cantidad }) => prod.stock - cantidad);
+      const activos   = newStocks.map((s) => s > 0);
       await client.query(
-        'UPDATE mercado_usuarios SET saldo = saldo + $1 WHERE mercado_id = $2 AND usuario_id = $3',
-        [subtotal, id, vendedorId]
-      );
-
-      if (prod.stock !== null) {
-        const nuevoStock = prod.stock - cantidad;
-        await client.query(
-          'UPDATE mercado_productos SET stock = $1, activo = $2 WHERE id = $3',
-          [nuevoStock, nuevoStock > 0, prod.id]
-        );
-      }
-
-      await client.query(
-        `INSERT INTO mercado_pedido_items (pedido_id, producto_id, vendedor_id, nombre_producto, precio, cantidad)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [pedido.id, prod.id, vendedorId, prod.nombre, prod.precio, cantidad]
-      );
-
-      await client.query(
-        `INSERT INTO mercado_transacciones (mercado_id, tipo, usuario_origen_id, usuario_destino_id, monto, descripcion, pedido_id)
-         VALUES ($1, 'compra', $2, $3, $4, $5, $6)`,
-        [id, req.user.id, vendedorId, subtotal, `Compra${cantidad > 1 ? ` x${cantidad}` : ''}: ${prod.nombre}`, pedido.id]
+        `UPDATE mercado_productos AS mp
+         SET stock = v.stock, activo = v.activo
+         FROM (SELECT unnest($1::int[]) AS id, unnest($2::int[]) AS stock, unnest($3::boolean[]) AS activo) AS v
+         WHERE mp.id = v.id`,
+        [prodIds, newStocks, activos]
       );
     }
+
+    // Batch INSERT pedido_items
+    const itemPlaceholders = itemsProc.map((_, i) => {
+      const b = i * 6;
+      return `($${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6})`;
+    }).join(', ');
+    await client.query(
+      `INSERT INTO mercado_pedido_items (pedido_id, producto_id, vendedor_id, nombre_producto, precio, cantidad) VALUES ${itemPlaceholders}`,
+      itemsProc.flatMap(({ prod, cantidad, vendedorId }) => [pedido.id, prod.id, vendedorId, prod.nombre, prod.precio, cantidad])
+    );
+
+    // Batch INSERT transacciones
+    const subtotals = itemsProc.map(({ prod, cantidad }) => Math.round(parseFloat(prod.precio) * cantidad * 100) / 100);
+    const txPlaceholders = itemsProc.map((_, i) => {
+      const b = i * 6;
+      return `($${b+1}, 'compra', $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6})`;
+    }).join(', ');
+    await client.query(
+      `INSERT INTO mercado_transacciones (mercado_id, tipo, usuario_origen_id, usuario_destino_id, monto, descripcion, pedido_id) VALUES ${txPlaceholders}`,
+      itemsProc.flatMap(({ prod, cantidad, vendedorId }, i) => [
+        id, req.user.id, vendedorId, subtotals[i],
+        `Compra${cantidad > 1 ? ` x${cantidad}` : ''}: ${prod.nombre}`,
+        pedido.id,
+      ])
+    );
 
     await client.query('COMMIT');
     res.status(201).json({ pedido_id: pedido.id, total, items: itemsProc.length });

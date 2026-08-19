@@ -189,25 +189,25 @@ async function cerrarMercado(req, res) {
       [id, m.admin_id]
     );
 
-    let totalDevuelto = 0;
-    for (const p of participantes) {
-      await client.query(
-        'UPDATE mercado_usuarios SET saldo = 0 WHERE mercado_id = $1 AND usuario_id = $2',
-        [id, p.usuario_id]
-      );
-      await client.query(
-        `INSERT INTO mercado_transacciones (mercado_id, tipo, usuario_origen_id, usuario_destino_id, monto, descripcion)
-         VALUES ($1, 'devolucion', $2, $3, $4, 'Devolución al cierre del mercado')`,
-        [id, p.usuario_id, m.admin_id, p.saldo]
-      );
-      totalDevuelto += parseFloat(p.saldo);
-    }
+    const totalDevuelto = participantes.reduce((sum, p) => sum + parseFloat(p.saldo), 0);
 
-    // Zerar saldo del admin en el mercado (el dinero virtual queda anulado al cierre)
+    // Zerar saldo de todos los participantes (incluido admin) en una sola query
     await client.query(
-      'UPDATE mercado_usuarios SET saldo = 0 WHERE mercado_id = $1 AND usuario_id = $2',
-      [id, m.admin_id]
+      'UPDATE mercado_usuarios SET saldo = 0 WHERE mercado_id = $1 AND saldo > 0',
+      [id]
     );
+
+    // Batch INSERT devoluciones
+    if (participantes.length > 0) {
+      const txPlaceholders = participantes.map((_, i) => {
+        const b = i * 4;
+        return `($${b+1}, 'devolucion', $${b+2}, $${b+3}, $${b+4}, 'Devolución al cierre del mercado')`;
+      }).join(', ');
+      await client.query(
+        `INSERT INTO mercado_transacciones (mercado_id, tipo, usuario_origen_id, usuario_destino_id, monto, descripcion) VALUES ${txPlaceholders}`,
+        participantes.flatMap((p) => [id, p.usuario_id, m.admin_id, p.saldo])
+      );
+    }
 
     await client.query(`UPDATE mercados SET estado = 'cerrado' WHERE id = $1`, [id]);
     await client.query('COMMIT');

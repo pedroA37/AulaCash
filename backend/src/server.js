@@ -2,15 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+app.set('trust proxy', 1); // Necesario para rate limiting correcto detrás de Render/Vercel
 
 app.use(helmet());
+app.use(compression({ threshold: 1024 }));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '1mb' }));
+
+// Límites generosos para entorno aula (200 alumnos pueden compartir un mismo IP de WiFi)
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false });
+const apiLimiter  = rateLimit({ windowMs: 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false });
+app.use('/api/auth', authLimiter);
+app.use('/api', apiLimiter);
 
 // Rutas
 app.use('/api/auth', require('./routes/auth.routes'));

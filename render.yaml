@@ -35,18 +35,9 @@ services:
     rootDir: landing
     staticPublishPath: .
 
-  # ── FRONTEND ─────────────────────────────────────────────
+  # ── FRONTEND (redirige al nuevo sitio en Vercel) ─────────
   - type: web
     name: aulacash-frontend
     runtime: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    plan: free
-    envVars:
-      - key: VITE_API_URL
-        sync: false          # URL del backend + /api
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    rootDir: redirect
+    staticPublishPath: .
