@@ -348,6 +348,7 @@ async function crearProducto(req, res) {
   if (!nombre || !precio) return res.status(400).json({ error: 'nombre y precio son requeridos' });
   const precioNum = parseFloat(precio);
   if (isNaN(precioNum) || precioNum <= 0) return res.status(400).json({ error: 'Precio inválido' });
+  if (imagen_url && imagen_url.length > 200000) return res.status(400).json({ error: 'La imagen es demasiado grande (máx. ~150 KB)' });
 
   const { rows } = await pool.query(
     `INSERT INTO mercado_productos (mercado_id, nombre, descripcion, precio, imagen_url, stock, vendedor_id)
@@ -360,6 +361,7 @@ async function crearProducto(req, res) {
 async function actualizarProducto(req, res) {
   const { id, pid } = req.params;
   const { nombre, descripcion, precio, imagen_url, stock, activo } = req.body;
+  if (imagen_url && imagen_url.length > 200000) return res.status(400).json({ error: 'La imagen es demasiado grande (máx. ~150 KB)' });
 
   const campos = [];
   const vals = [];

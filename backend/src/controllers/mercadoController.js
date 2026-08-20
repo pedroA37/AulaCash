@@ -239,6 +239,7 @@ async function crearMiProducto(req, res) {
   if (!nombre || !nombre.trim()) return res.status(400).json({ error: 'El nombre es requerido' });
   const precioNum = parseFloat(precio);
   if (isNaN(precioNum) || precioNum <= 0) return res.status(400).json({ error: 'El precio debe ser mayor a 0' });
+  if (imagen_url && imagen_url.length > 200000) return res.status(400).json({ error: 'La imagen es demasiado grande (máx. ~150 KB)' });
 
   const { rows: [m] } = await pool.query('SELECT estado FROM mercados WHERE id = $1', [id]);
   if (!m) return res.status(404).json({ error: 'Mercado no encontrado' });
@@ -263,6 +264,7 @@ async function actualizarMiProducto(req, res) {
   );
   if (!prod) return res.status(404).json({ error: 'Producto no encontrado' });
   if (prod.vendedor_id !== req.user.id) return res.status(403).json({ error: 'No podés editar un producto que no es tuyo' });
+  if (imagen_url && imagen_url.length > 200000) return res.status(400).json({ error: 'La imagen es demasiado grande (máx. ~150 KB)' });
 
   const nuevoNombre = nombre?.trim() || prod.nombre;
   const nuevaDesc = descripcion !== undefined ? (descripcion?.trim() || null) : prod.descripcion;

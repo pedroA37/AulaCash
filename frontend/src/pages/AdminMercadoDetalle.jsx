@@ -30,7 +30,7 @@ const TABS = [
   { id: 'config', icon: 'settings', label: 'Config' },
 ];
 
-function resizarImagen(file, maxPx = 600) {
+function resizarImagen(file, maxPx = 400) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -41,7 +41,7 @@ function resizarImagen(file, maxPx = 600) {
         canvas.width = Math.round(img.width * ratio);
         canvas.height = Math.round(img.height * ratio);
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
+        resolve(canvas.toDataURL('image/jpeg', 0.55));
       };
       img.src = e.target.result;
     };
@@ -241,6 +241,10 @@ export default function AdminMercadoDetalle() {
     const file = e.target.files?.[0];
     if (!file) return;
     const dataUrl = await resizarImagen(file);
+    if (dataUrl.length > 200000) {
+      showErr('La imagen es demasiado grande. Usá una foto más pequeña o sacá una foto nueva.');
+      return;
+    }
     setImagenPreview(dataUrl);
     setFormProd((f) => ({ ...f, imagen_url: dataUrl }));
   }

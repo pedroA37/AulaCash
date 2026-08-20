@@ -18,7 +18,7 @@ function saveCart(mercadoId, cart) {
   localStorage.setItem(`cart_mercado_${mercadoId}`, JSON.stringify(cart));
 }
 
-function resizarImagen(file, maxPx = 600) {
+function resizarImagen(file, maxPx = 400) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -29,7 +29,7 @@ function resizarImagen(file, maxPx = 600) {
         canvas.width = Math.round(img.width * ratio);
         canvas.height = Math.round(img.height * ratio);
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
+        resolve(canvas.toDataURL('image/jpeg', 0.55));
       };
       img.src = e.target.result;
     };
@@ -216,6 +216,10 @@ export default function MercadoDetalle() {
     const file = e.target.files?.[0];
     if (!file) return;
     const b64 = await resizarImagen(file);
+    if (b64.length > 200000) {
+      setProdError('La imagen es demasiado grande. Usá una foto más pequeña o sacá una foto nueva.');
+      return;
+    }
     setImagenPreview(b64);
     setFormProd((f) => ({ ...f, imagen_url: b64 }));
   }
