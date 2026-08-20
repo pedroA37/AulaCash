@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resetOk = searchParams.get('resetOk') === '1';
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -54,6 +56,13 @@ export default function Login() {
         {/* Tarjeta */}
         <div className="bg-white rounded-3xl p-6 elevation-l1">
           <h2 className="text-[20px] font-bold text-[#1a1c1c] mb-5">Iniciar sesión</h2>
+
+          {resetOk && (
+            <div className="bg-[#d4f4e2] text-[#1a6b3c] rounded-2xl px-4 py-3 text-[14px] mb-4 font-medium flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              Contraseña cambiada con éxito. Podés iniciar sesión.
+            </div>
+          )}
 
           {error && (
             <div className="bg-[#ffdad6] text-[#93000a] rounded-2xl px-4 py-3 text-[14px] mb-4 font-medium">
