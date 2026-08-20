@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { body } = require('express-validator');
-const { registro, login, forgotPassword, resetPassword } = require('../controllers/authController');
+const { registro, login, resetPassword } = require('../controllers/authController');
 
 router.post('/registro', [
   body('dni').trim().notEmpty().withMessage('DNI requerido'),
@@ -15,7 +15,6 @@ router.post('/login', [
   body('password').notEmpty(),
 ], login);
 
-router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 module.exports = router;

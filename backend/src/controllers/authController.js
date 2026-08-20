@@ -3,9 +3,6 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const pool = require('../config/db');
 const { generarAliasUnico, generarCBUUnico } = require('../services/generadores');
-const { Resend } = require('resend');
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function generarToken(usuario) {
   return jwt.sign(
@@ -82,74 +79,25 @@ async function login(req, res) {
   res.json({ token, usuario: usuarioSinHash });
 }
 
-async function forgotPassword(req, res) {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email requerido' });
-
-  const { rows } = await pool.query(
-    'SELECT id, nombre, apellido FROM usuarios WHERE email = $1', [email]
-  );
-  // Respuesta genérica para no filtrar si el email existe
-  if (rows.length === 0) {
-    return res.json({ mensaje: 'Si el email existe, recibirás un enlace de recuperación' });
-  }
-
-  const { id: usuarioId, nombre, apellido } = rows[0];
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
-
-  const { rows: tokenRows } = await pool.query(
-    `INSERT INTO password_resets (usuario_id, expires_at)
-     VALUES ($1, $2) RETURNING token`,
-    [usuarioId, expiresAt]
-  );
-
-  const token = tokenRows[0].token;
-  const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-
-  if (process.env.N8N_FORGOT_PASSWORD_WEBHOOK) {
-    fetch(process.env.N8N_FORGOT_PASSWORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, nombre, apellido, link }),
-    }).catch(() => {});
-  }
-
-  res.json({ mensaje: 'Si el email existe, recibirás un enlace de recuperación' });
-}
-
 async function resetPassword(req, res) {
-  const { token, nuevaPassword } = req.body;
-  if (!token || !nuevaPassword) {
-    return res.status(400).json({ error: 'Token y nueva contraseña requeridos' });
+  const { email, dni, nuevaPassword } = req.body;
+  if (!email || !dni || !nuevaPassword) {
+    return res.status(400).json({ error: 'Email, DNI y nueva contraseña son requeridos' });
   }
   if (nuevaPassword.length < 8) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
   }
 
   const { rows } = await pool.query(
-    `SELECT pr.*, u.email, u.nombre, u.apellido
-     FROM password_resets pr
-     JOIN usuarios u ON u.id = pr.usuario_id
-     WHERE pr.token = $1 AND pr.usado = false AND pr.expires_at > now()`,
-    [token]
+    'SELECT id FROM usuarios WHERE email = $1 AND dni = $2',
+    [email.toLowerCase().trim(), dni.trim()]
   );
   if (rows.length === 0) {
-    return res.status(400).json({ error: 'Token inválido o expirado' });
+    return res.status(400).json({ error: 'Los datos ingresados no coinciden con ninguna cuenta' });
   }
 
-  const reset = rows[0];
   const hash = await bcrypt.hash(nuevaPassword, 12);
-
-  await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, reset.usuario_id]);
-  await pool.query('UPDATE password_resets SET usado = true WHERE id = $1', [reset.id]);
-
-  if (process.env.N8N_CAMBIO_PASSWORD_WEBHOOK) {
-    fetch(process.env.N8N_CAMBIO_PASSWORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: reset.email, nombre: reset.nombre, apellido: reset.apellido }),
-    }).catch(() => {});
-  }
+  await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, rows[0].id]);
 
   res.json({ mensaje: 'Contraseña actualizada correctamente' });
 }
@@ -186,4 +134,4 @@ async function cambiarPassword(req, res) {
   res.json({ mensaje: 'Contraseña actualizada correctamente' });
 }
 
-module.exports = { registro, login, forgotPassword, resetPassword, cambiarPassword };
+module.exports = { registro, login, resetPassword, cambiarPassword };
