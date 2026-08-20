@@ -26,16 +26,15 @@ async function unirseAlMercado(req, res) {
     [codigo.toUpperCase().trim()]
   );
   if (!m) return res.status(404).json({ error: 'Código de mercado inválido' });
+  if (m.estado !== 'abierto') return res.status(400).json({ error: 'El mercado no está abierto' });
 
-  try {
-    await pool.query(
-      'INSERT INTO mercado_usuarios (mercado_id, usuario_id) VALUES ($1, $2)',
-      [m.id, req.user.id]
-    );
-  } catch (err) {
-    if (err.code === '23505') return res.status(409).json({ error: 'Ya participás en este mercado' });
-    throw err;
-  }
+  const { rowCount } = await pool.query(
+    `INSERT INTO mercado_usuarios (mercado_id, usuario_id)
+     VALUES ($1, $2)
+     ON CONFLICT (mercado_id, usuario_id) DO NOTHING`,
+    [m.id, req.user.id]
+  );
+  if (rowCount === 0) return res.status(409).json({ error: 'Ya participás en este mercado' });
 
   res.status(201).json({ mensaje: `Te uniste al mercado "${m.nombre}"`, mercado_id: m.id });
 }
